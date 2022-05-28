@@ -1,0 +1,6 @@
+dist/
+node_modules/
+substrait-download/
+
+*.tgz
+*~

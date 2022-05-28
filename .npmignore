@@ -1,0 +1,4 @@
+node_modules/
+scripts/
+substrait-download/
+dist/.gitignore
