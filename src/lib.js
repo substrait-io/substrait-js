@@ -1,44 +1,38 @@
-const { substrait } = require('substrait');
+const mermaid = require('mermaid');
 
-const { substraitToJson } = require('./substrait-to-json');
+const {substrait} = require('substrait');
+const {substraitToJson} = require('./substrait-to-json');
+const { substraitToMermaid } = require('./substrait-to-mermaid');
 
-function parseSubstrait() {
+mermaid.initialize({startOnLoad: true});
 
-}
+window.onload = function() {
+  document.getElementById('file-input').addEventListener('input', (e) => {
+    const reader = new FileReader();
+    reader.onerror = function() {
+      console.log('Error');
+      console.log(reader.error);
+      return;
+    };
+    reader.onload = function() {
+      try {
+        const plan = substrait.Plan.decode(new Uint8Array(reader.result));
+        const planJson = substraitToJson(plan);
+        document.getElementById('plan-json').data = JSON.parse(planJson);
 
-class SubstraitPlanElement extends HTMLElement {
-
-    constructor() {
-        super();
-        this.substraitPlan = null;
-        if (this.hasAttribute('href')) {
-            const hrefAnchor = this.getAttribute('href');
-            fetch(hrefAnchor).then((contents) => {
-                return contents.arrayBuffer();
-            }).then((contentsBuffer) => {
-                console.log('Fetched Substrait plan: ');
-                console.log(contentsBuffer);
-                this.plan = substrait.Plan.decode(new Uint8Array(contentsBuffer));
-            }).catch((err) => {
-                console.log('Could not fetch Substrait plan');
-                console.log(err);
-            });
-        }
-    }
-
-    update() {
-        if (this.substraitPlan) {
-            const planJson = substraitToJson(this.substraitPlan);
-            this.textContent = planJson;
-        }
-    }
-
-    set plan(value) {
-        console.log('Plan updated to: ' + value);
-        this.substraitPlan = value;
-        this.update();
-    }
-}
-
-// Define the new element
-customElements.define('substrait-plan', SubstraitPlanElement);
+        const mermaidEl = document.getElementById('plan-mermaid');
+        const mermaidCb = (svg) => {
+          mermaidEl.innerHTML = svg;
+        };
+        const planMermaid = substraitToMermaid(plan);
+        mermaid.render('plan-mermaid-graph', planMermaid, mermaidCb);
+      } catch (e) {
+        dst = document.getElementById('plan-json');
+        dst.data = {error: `Error parsing the plan: ${e}`};
+      }
+    };
+    reader.readAsArrayBuffer(
+        document.getElementById('file-input').files[0],
+    );
+  });
+};
