@@ -4,3 +4,32 @@
 html {
     height: 100%;
 }
+
+path.link {
+    fill: none;
+    stroke: #666;
+    stroke-width: 1.5px;
+  }
+  
+circle {
+    fill: #ccc;
+    stroke: #fff;
+    stroke-width: 1.5px;
+  }
+  
+text {
+    fill: white;
+    font: 10px sans-serif;
+    pointer-events: none;
+  }
+
+table, th, td, caption {
+    border: 1px solid;
+    width: 100%;
+}
+
+caption {
+    display: table-caption;
+    text-align: center;
+    caption-side: top;
+  }

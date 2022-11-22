@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Substrait viewer demo</title>
+    <link href='https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css' rel='stylesheet'>
   </head>
   <body class="d-flex flex-column h-100">
     <nav class="navbar navbar-expand-lg bg-light">
@@ -43,7 +44,14 @@
         <json-viewer class="col-sm" id="plan-json">
           { "info": "Please load a plan" }
         </json-viewer>
-        <div class="col-sm" id="plan-mermaid"></div>
+    <div class="col-6">
+      <div style="margin-top: 10px; list-style: none;" id="index" class="fa"></div>
+    <div id="svgContainer">
+    <svg width="960" height="50"></svg>  
+      </div>
+      <div id="nodeData" style="overflow-y: scroll; height: 500px;">
+      </div>
+      </div>
       </div>
     </div>
   </body>
