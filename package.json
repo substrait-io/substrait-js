@@ -12,7 +12,7 @@
   "dependencies": {
     "bootstrap": "^5.1.3",
     "style-loader": "^3.3.1",
-    "substrait": "file:../substrait-js/substrait-0.3.0.tgz",
+    "substrait": "file:../substrait-js/substrait-0.20.0.tgz",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.9.0"
