@@ -1,19 +1,22 @@
 {
   "name": "substrait",
-  "version": "0.3.0",
+  "version": "0.20.0",
   "description": "Packages Substrait protobuf files into a static module.",
   "main": "dist/index.js",
   "scripts": {
     "clean": "rimraf substrait-download dist/index.js",
     "download": "scripts/download.js",
+    "make-dist": "mkdirp dist",
     "proto": "pbjs --target static-module --path substrait-download/proto -o dist/index.js substrait/plan.proto",
-    "prepare": "npm run clean && npm run download && npm run proto",
+    "prepare": "npm run clean && npm run download && npm run make-dist && npm run proto",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "download-git-repo": "^3.0.2",
+    "download-git-repo": "^0.0.2",
+    "git-clone": "^0.2.0",
+    "mkdirp": "^1.0.4",
     "protobufjs": "^6.11.3",
     "rimraf": "^3.0.2"
   }
