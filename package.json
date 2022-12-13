@@ -10,13 +10,12 @@
   "author": "Weston Pace",
   "license": "Apache-2.0",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.2.1",
     "bootstrap": "^5.2.2",
     "d3": "^7.6.1",
-    "font-awesome": "^4.7.0",
     "style-loader": "^3.3.1",
     "substrait": "file:../substrait-js/substrait-0.20.0.tgz",
     "webpack": "^5.75.0",
-    "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.11.1"
   },
   "devDependencies": {
@@ -24,8 +23,10 @@
     "css-loader": "^6.7.1",
     "eslint": "^8.27.0",
     "eslint-config-google": "^0.14.0",
+    "font-awesome": "^4.7.0",
     "jest": "^29.3.1",
     "mermaid": "^9.2.2",
+    "node-sass": "^8.0.0",
     "protobufjs": "~7.1.2",
     "sass": "^1.56.1",
     "sass-loader": "^13.2.0",
