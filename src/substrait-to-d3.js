@@ -4,17 +4,17 @@ const { SubstraitParser } = require('./substrait-parser');
 const d3 = require('d3');
 
 // Populating map with nodes information
-function populateNodes(plan, nodes) {
+function createNodeIdToNodeMap(plan, nodes) {
     nodes.set(plan.id, plan);
     for (let i = 0; i < plan.inputs.length; ++i) {
-        populateNodes(plan.inputs[i], nodes);
+        createNodeIdToNodeMap(plan.inputs[i], nodes);
     }
 }
 
 // Building graph from Substrait Plan
 function buildGraph(plan) {
     let nodes = new Map();
-    populateNodes(plan.inputs[0], nodes);
+    createNodeIdToNodeMap(plan.inputs[0], nodes);
     let edges = [];
     nodes.forEach((value) => {
         for (let i = 0; i < value.inputs.length; ++i) {
@@ -48,16 +48,22 @@ function processEdges(nodes, links) {
 }
 
 // Specifying color of graph nodes
+const COLORS = {
+    'node-green': '#0E4D05',
+    'node-blue': '#052748',
+    'node-brown': '#4D2205',
+    'node-purple':'#46054D'
+};
 function nodeColor(nodeType) {
     switch (nodeType) {
         case 'root':
-            return "#4D2205";
+            return COLORS['node-brown'];
         case 'project':
-            return "#0E4D05";
+            return COLORS['node-green'];
         case 'read':
-            return "#052748";
+            return COLORS['node-blue'];
         case 'join':
-            return '#46054D'
+            return COLORS['node-purple'];
     }
 }
 

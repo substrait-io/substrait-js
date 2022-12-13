@@ -23,7 +23,6 @@ window.onload = function() {
         document.getElementById('plan-json').data = JSON.parse(planJson);
         const subplan = new SubstraitParser(plan).planToNode(plan);
         const graph = buildGraph(subplan);
-        console.log("graph: ",graph);
         drawGraph(graph['nodes'],graph['edges']);
       } catch (e) {
         dst = document.getElementById('plan-json');
