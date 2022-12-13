@@ -690,7 +690,7 @@ class SubstraitParser {
       (val, idx) => ({ name: `name[${idx}]`, value: val }));
     const inputs = [this.relToNode(rel.input)];
     const schema = this.makeSchemaField([]);
-    return this.makePrintNode('root', inputs, props, schema, null);
+    return this.makePrintNode('sink', inputs, props, schema, null);
   }
 
   /**

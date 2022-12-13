@@ -56,7 +56,7 @@ const COLORS = {
 };
 function nodeColor(nodeType) {
     switch (nodeType) {
-        case 'root':
+        case 'sink':
             return COLORS['node-brown'];
         case 'project':
             return COLORS['node-green'];
@@ -70,7 +70,7 @@ function nodeColor(nodeType) {
 // Specifying Font-Awesome icons for graph nodes
 function nodeIcon(nodeType) {
     switch (nodeType) {
-        case 'root':
+        case 'sink':
             return '\uf0ce';
         case 'project':
             return '\uf12b';
@@ -82,11 +82,7 @@ function nodeIcon(nodeType) {
 }
 
 function typeToLabel(nodeType) {
-    if (nodeType == 'root') {
-        return 'Sink';
-    } else {
-        return nodeType[0].toUpperCase() + nodeType.substring(1);
-    }
+    return nodeType[0].toUpperCase() + nodeType.substring(1);
 }
 
 // Drawing Graph using d3JS
