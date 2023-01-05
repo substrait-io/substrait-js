@@ -1,6 +1,15 @@
-'use strict';
+"use strict";
 
-const JOIN_TYPES = ['unspecified', 'inner', 'outer', 'left', 'right', 'semi', 'anti', 'single'];
+const JOIN_TYPES = [
+  "unspecified",
+  "inner",
+  "outer",
+  "left",
+  "right",
+  "semi",
+  "anti",
+  "single",
+];
 
 class SubstraitParser {
   /**
@@ -26,7 +35,7 @@ class SubstraitParser {
     for (const extensionDecl of plan.extensions) {
       if (extensionDecl.extensionFunction) {
         const func = extensionDecl.extensionFunction;
-        const name = func.name.substring(0, func.name.indexOf(':'));
+        const name = func.name.substring(0, func.name.indexOf(":"));
         // TODO(weston) find some way to make URIs expandable
         // const uri = urisMap.get(func.extensionUriReference);
         extSet.set(func.functionAnchor, `${name}`);
@@ -100,10 +109,10 @@ class SubstraitParser {
    */
   makeSchemaField(fields) {
     return {
-      name: '',
+      name: "",
       children: fields,
-      type: '',
-      nullability: 'unspecified',
+      type: "",
+      nullability: "unspecified",
     };
   }
 
@@ -134,7 +143,11 @@ class SubstraitParser {
   makePrintNode(type, inputs, props, schema, emit) {
     const emitSchema = this.applyEmit(schema, emit);
     return {
-      id: this.nextId(type), type, inputs, props, schema: emitSchema,
+      id: this.nextId(type),
+      type,
+      inputs,
+      props,
+      schema: emitSchema,
     };
   }
 
@@ -147,13 +160,14 @@ class SubstraitParser {
    */
   structFieldHelper(field, currentName, currentField) {
     const fieldNum = field.field;
-    const fieldName = (currentField.name) ? currentField.name : `$${fieldNum}`;
+    const fieldName = currentField.name ? currentField.name : `$${fieldNum}`;
     const nextName = `${currentName}${fieldName}`;
     if (field.child) {
       return this.structFieldHelper(
         field.child,
         `${nextName}.`,
-        currentField.children[fieldNum]);
+        currentField.children[fieldNum]
+      );
     }
     return currentField.children[fieldNum];
   }
@@ -173,7 +187,7 @@ class SubstraitParser {
    * @return {Field} a stringified representation
    */
   structFieldToField(field, exprIn) {
-    return this.structFieldHelper(field, '', exprIn);
+    return this.structFieldHelper(field, "", exprIn);
   }
 
   /**
@@ -213,7 +227,7 @@ class SubstraitParser {
   functionArgumentToStr(arg, inp) {
     if (arg.enum) {
       if (this.hasValue(arg.enum.unspecified)) {
-        return 'unspecified';
+        return "unspecified";
       }
       return arg.enum.specified;
     } else if (arg.type) {
@@ -221,7 +235,7 @@ class SubstraitParser {
     } else if (arg.value) {
       return this.expressionToStr(arg.value, inp).name;
     } else {
-      throw new Error('A FunctionArgument did not have an enum/type/value');
+      throw new Error("A FunctionArgument did not have an enum/type/value");
     }
   }
 
@@ -235,7 +249,7 @@ class SubstraitParser {
     if (this.extSet.has(ref)) {
       return this.extSet.get(ref);
     }
-    return 'unknown';
+    return "unknown";
   }
 
   /**
@@ -247,10 +261,11 @@ class SubstraitParser {
   argsToString(func, schema) {
     let args = [];
     if (func.arguments && func.arguments.length > 0) {
-      args = func.arguments.map(
-        (arg) => this.functionArgumentToStr(arg, schema));
+      args = func.arguments.map((arg) =>
+        this.functionArgumentToStr(arg, schema)
+      );
     }
-    return args.join(',');
+    return args.join(",");
   }
 
   /**
@@ -274,28 +289,28 @@ class SubstraitParser {
    * @return {Field} a field representation
    */
   literalToField(lit) {
-    let nullability = 'required';
+    let nullability = "required";
     if (lit.nullable) {
-      nullability = 'nullable';
+      nullability = "nullable";
     }
-    if (this.hasValue(lit, 'bool')) {
+    if (this.hasValue(lit, "bool")) {
       return {
-        name: lit.bool ? 'true' : 'false',
-        type: 'boolean',
+        name: lit.bool ? "true" : "false",
+        type: "boolean",
         nullability,
         children: [],
       };
     } else if (lit.date) {
       return {
         name: new Date(lit.date * 8.64e7).toISOString(),
-        type: 'date',
+        type: "date",
         nullability,
         children: [],
       };
     } else if (lit.i32) {
       return {
         name: lit.i32.toString(),
-        type: 'i32',
+        type: "i32",
         nullability,
         children: [],
       };
@@ -303,7 +318,7 @@ class SubstraitParser {
       const val = lit.intervalDayToSecond;
       return {
         name: `${val.days}d${val.seconds}s${val.microseconds}u`,
-        type: 'interval_day',
+        type: "interval_day",
         nullability,
         children: [],
       };
@@ -321,11 +336,11 @@ class SubstraitParser {
   castToField(cast, schema) {
     const input = this.expressionToStr(cast.input, schema);
     const outputType = this.typeToField(cast.type);
-    let fb = 'unspecified';
+    let fb = "unspecified";
     if (cast.failureBehavior === 1) {
-      fb = 'or null';
+      fb = "or null";
     } else if (cast.failureBehavior === 2) {
-      fb = 'or die';
+      fb = "or die";
     }
     const name = `cast(${input.name}, ${outputType.type}, ${fb})`;
     outputType.name = name;
@@ -364,21 +379,27 @@ class SubstraitParser {
    */
   projectToNode(project) {
     const input = this.relToNode(project.input);
-    const expressions = project.expressions.map(
-      (val, idx) => {
-        return {
-          name: `expressions[${idx}]`,
-          field: this.expressionToStr(val, input.schema),
-        };
-      });
+    const expressions = project.expressions.map((val, idx) => {
+      return {
+        name: `expressions[${idx}]`,
+        field: this.expressionToStr(val, input.schema),
+      };
+    });
     const outFields = expressions.map((expr) => expr.field);
     const fields = input.schema.children.concat(outFields);
     const schema = this.makeSchemaField(fields);
-    const props = expressions.map((expr) =>
-      ({ name: expr.name, value: expr.field.name }));
+    const props = expressions.map((expr) => ({
+      name: expr.name,
+      value: expr.field.name,
+    }));
     const inputs = [this.relToNode(project.input)];
     return this.makePrintNode(
-      'project', inputs, props, schema, project.common.emit);
+      "project",
+      inputs,
+      props,
+      schema,
+      project.common.emit
+    );
   }
 
   /**
@@ -399,38 +420,38 @@ class SubstraitParser {
       typeStr = `FIXEDCHAR<${type.fixedChar.length}>`;
       nullability = type.fixedChar.nullability;
     } else if (type.date) {
-      typeStr = 'date';
+      typeStr = "date";
       nullability = type.date.nullability;
     } else if (type.decimal) {
       typeStr = `DECIMAL<${type.decimal.precision},${type.decimal.scale}>`;
       nullability = type.decimal.nullability;
     } else if (type.i32) {
-      typeStr = 'i32';
+      typeStr = "i32";
       nullability = type.i32.nullability;
     } else if (type.i64) {
-      typeStr = 'i64';
+      typeStr = "i64";
       nullability = type.i64.nullability;
     } else if (type.bool) {
-      typeStr = 'boolean';
+      typeStr = "boolean";
       nullability = type.bool.nullability;
     } else if (type.string) {
-      typeStr = 'string';
+      typeStr = "string";
       nullability = type.string.nullability;
     } else {
       throw new Error(`Unrecognized type: ${JSON.stringify(type)}`);
     }
-    let nullabilityStr = '';
+    let nullabilityStr = "";
     if (nullability == 0) {
-      nullabilityStr = 'unspecified';
+      nullabilityStr = "unspecified";
     } else if (nullability == 1) {
-      nullabilityStr = 'nullable';
+      nullabilityStr = "nullable";
     } else if (nullability == 2) {
-      nullabilityStr = 'required';
+      nullabilityStr = "required";
     } else {
       throw new Error(`Unrecognized nullability: ${nullability}`);
     }
     return {
-      name: '',
+      name: "",
       type: typeStr,
       nullability: nullabilityStr,
       children: [],
@@ -446,7 +467,7 @@ class SubstraitParser {
     const names = struct.names;
     const types = struct.struct.types;
     if (names.length != types.length) {
-      throw new Error('NamedStruct must have one type for each name');
+      throw new Error("NamedStruct must have one type for each name");
     }
     const outTypes = [];
     for (let i = 0; i < names.length; i++) {
@@ -464,8 +485,8 @@ class SubstraitParser {
    */
   readTypeToProps(read) {
     if (read.namedTable) {
-      const tableName = read.namedTable.names.join('.');
-      return [{ name: 'namedTable.names', value: tableName }];
+      const tableName = read.namedTable.names.join(".");
+      return [{ name: "namedTable.names", value: tableName }];
     } else {
       throw new Error(`Unrecognized read type: ${JSON.stringify(read)}`);
     }
@@ -479,7 +500,7 @@ class SubstraitParser {
   readToNode(read) {
     const schema = this.namedStructToSchema(read.baseSchema);
     const props = this.readTypeToProps(read);
-    return this.makePrintNode('read', [], props, schema, read.common.emit);
+    return this.makePrintNode("read", [], props, schema, read.common.emit);
   }
 
   /**
@@ -503,14 +524,19 @@ class SubstraitParser {
     const input = this.relToNode(fetch.input);
     const schema = input.schema;
     const props = [];
-    if (this.hasValue(fetch, 'offset')) {
-      props.push({ name: 'offset', value: fetch.offset });
+    if (this.hasValue(fetch, "offset")) {
+      props.push({ name: "offset", value: fetch.offset });
     }
-    if (this.hasValue(fetch, 'count')) {
-      props.push({ name: 'count', value: fetch.count });
+    if (this.hasValue(fetch, "count")) {
+      props.push({ name: "count", value: fetch.count });
     }
     return this.makePrintNode(
-      'fetch', [input], props, schema, fetch.common.emit);
+      "fetch",
+      [input],
+      props,
+      schema,
+      fetch.common.emit
+    );
   }
 
   /**
@@ -523,19 +549,19 @@ class SubstraitParser {
     const exprStr = this.expressionToStr(sortField.expr, schema).name;
     if (sortField.direction) {
       const dir = sortField.direction;
-      let sortDesc = '';
+      let sortDesc = "";
       if (dir === 0) {
-        sortDesc = 'unspecified';
+        sortDesc = "unspecified";
       } else if (dir === 1) {
-        sortDesc = 'ascending (nulls first)';
+        sortDesc = "ascending (nulls first)";
       } else if (dir === 2) {
-        sortDesc = 'ascending (nulls last)';
+        sortDesc = "ascending (nulls last)";
       } else if (dir === 3) {
-        sortDesc = 'descending (nulls first)';
+        sortDesc = "descending (nulls first)";
       } else if (dir === 4) {
-        sortDesc = 'descending (nulls last)';
+        sortDesc = "descending (nulls last)";
       } else if (dir === 5) {
-        sortDesc = 'clustered';
+        sortDesc = "clustered";
       } else {
         throw new Error(`Unrecognized sort direction: ${dir}`);
       }
@@ -551,13 +577,13 @@ class SubstraitParser {
   sortToNode(sort) {
     const input = this.relToNode(sort.input);
     const schema = input.schema;
-    const props = sort.sorts.map(((sort, idx) => {
+    const props = sort.sorts.map((sort, idx) => {
       return {
         name: `sorts[${idx}]`,
         value: this.sortFieldToStr(sort, schema),
       };
-    }));
-    return this.makePrintNode('sort', [input], props, schema, sort.common.emit);
+    });
+    return this.makePrintNode("sort", [input], props, schema, sort.common.emit);
   }
 
   /**
@@ -589,17 +615,19 @@ class SubstraitParser {
     });
     agg.measures.forEach((measure, idx) => {
       const aggregate = this.aggregateFunctionToField(
-        measure.measure, input.schema);
+        measure.measure,
+        input.schema
+      );
       fields.push(aggregate);
       const innerProps = [
         {
-          name: 'measure',
+          name: "measure",
           value: aggregate.name,
         },
       ];
       if (measure.filter) {
         innerProps.push({
-          name: 'filter',
+          name: "filter",
           value: this.expressionToStr(measure.filter, input.schema).name,
         });
       }
@@ -610,7 +638,12 @@ class SubstraitParser {
     });
     const schema = this.makeSchemaField(fields);
     return this.makePrintNode(
-      'aggregate', [input], props, schema, agg.common.emit);
+      "aggregate",
+      [input],
+      props,
+      schema,
+      agg.common.emit
+    );
   }
 
   /**
@@ -624,12 +657,17 @@ class SubstraitParser {
     const schema = input.schema;
     if (filt.condition) {
       props.push({
-        name: 'condition',
+        name: "condition",
         value: this.expressionToStr(filt.condition, schema).name,
       });
     }
     return this.makePrintNode(
-      'filter', [input], props, schema, filt.common.emit);
+      "filter",
+      [input],
+      props,
+      schema,
+      filt.common.emit
+    );
   }
 
   /**
@@ -640,19 +678,26 @@ class SubstraitParser {
   joinToNode(join) {
     const left = this.relToNode(join.left);
     const right = this.relToNode(join.right);
-    const props = []
-    const schema = this.makeSchemaField(left.schema.children.concat(right.schema.children))
-    let joinType = 'unspecified';
+    const props = [];
+    const schema = this.makeSchemaField(
+      left.schema.children.concat(right.schema.children)
+    );
+    let joinType = "unspecified";
     if (join.type) {
       joinType = JOIN_TYPES[join.type];
     }
-    props.push({ name: 'type', value: joinType });
+    props.push({ name: "type", value: joinType });
     if (join.expression) {
       const exprStr = this.expressionToStr(join.expression, schema).name;
-      props.push({ name: 'expression', value: exprStr });
+      props.push({ name: "expression", value: exprStr });
     }
     return this.makePrintNode(
-      'join', [left, right], props, schema, join.common.emit);
+      "join",
+      [left, right],
+      props,
+      schema,
+      join.common.emit
+    );
   }
 
   /**
@@ -686,11 +731,13 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   rootRelToNode(rel) {
-    const props = rel.names.map(
-      (val, idx) => ({ name: `name[${idx}]`, value: val }));
+    const props = rel.names.map((val, idx) => ({
+      name: `name[${idx}]`,
+      value: val,
+    }));
     const inputs = [this.relToNode(rel.input)];
     const schema = this.makeSchemaField([]);
-    return this.makePrintNode('sink', inputs, props, schema, null);
+    return this.makePrintNode("sink", inputs, props, schema, null);
   }
 
   /**
@@ -708,11 +755,10 @@ class SubstraitParser {
       }
     }
     const schema = this.makeSchemaField([]);
-    return this.makePrintNode('plan', nodes, [], schema, null);
+    return this.makePrintNode("plan", nodes, [], schema, null);
   }
 }
 
 module.exports = {
-  SubstraitParser
+  SubstraitParser,
 };
-

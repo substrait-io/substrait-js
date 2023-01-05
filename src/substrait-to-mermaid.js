@@ -1,14 +1,17 @@
-'use strict';
+"use strict";
 
-const {SubstraitParser} = require('./substrait-parser');
+const { SubstraitParser } = require("./substrait-parser");
 
 /**
-   * Helper function to add two spaces to every line
-   * @param {string} val a newline delimited line
-   * @return {string} An indented version
-   */
+ * Helper function to add two spaces to every line
+ * @param {string} val a newline delimited line
+ * @return {string} An indented version
+ */
 function indentify(val) {
-  return val.split(/\n/).map((x) => '  ' + x).join('\n');
+  return val
+    .split(/\n/)
+    .map((x) => "  " + x)
+    .join("\n");
 }
 
 /**
@@ -18,13 +21,15 @@ function indentify(val) {
  */
 function propToMermaid(prop) {
   if (Array.isArray(prop.value)) {
-    return prop.value.map((item) => {
-      const scopedItem = {
-        name: `${prop.name}.${item.name}`,
-        value: item.value,
-      };
-      return propToMermaid(scopedItem);
-    }).join('');
+    return prop.value
+      .map((item) => {
+        const scopedItem = {
+          name: `${prop.name}.${item.name}`,
+          value: item.value,
+        };
+        return propToMermaid(scopedItem);
+      })
+      .join("");
   } else {
     return `<li>${prop.name}=${prop.value}</li>`;
   }
@@ -36,18 +41,19 @@ function propToMermaid(prop) {
  * @return {string} a markdown representation of the node
  */
 function nodeToMermaid(node) {
-  const fields = node.schema.children.map(
-      (field) => `<li>${field.type} ${field.name}</li>`).join('');
-  const props = node.props.map(propToMermaid).join('');
+  const fields = node.schema.children
+    .map((field) => `<li>${field.type} ${field.name}</li>`)
+    .join("");
+  const props = node.props.map(propToMermaid).join("");
   let selfValue = `${node.id}["${node.type.toUpperCase()}<br/>`;
   selfValue += `Output Schema<br/><ul>${fields}</ul><br/>`;
   selfValue += `Properties<br/><ul>${props}</ul>"]`;
-  let combinedValue = '';
+  let combinedValue = "";
   for (const input of node.inputs) {
     const inputValue = nodeToMermaid(input);
-    combinedValue += inputValue + '\n\n';
+    combinedValue += inputValue + "\n\n";
   }
-  combinedValue += selfValue + '\n';
+  combinedValue += selfValue + "\n";
   for (const input of node.inputs) {
     combinedValue += `${input.id} --> ${node.id}\n`;
   }
@@ -55,11 +61,9 @@ function nodeToMermaid(node) {
 }
 
 module.exports = {
-  substraitToMermaid: function(plan) {
-    let mermaid = 'graph TB\n';
-    console.log("printing plan: ",plan)
+  substraitToMermaid: function (plan) {
+    let mermaid = "graph TB\n";
     const printNode = new SubstraitParser(plan).planToNode(plan);
-    console.log("printing nodes: ",printNode)
     for (const node of printNode.inputs) {
       const markdown = indentify(nodeToMermaid(node));
       mermaid += markdown;
