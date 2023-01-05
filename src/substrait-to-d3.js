@@ -71,13 +71,13 @@ function nodeColor(nodeType) {
 function nodeIcon(nodeType) {
     switch (nodeType) {
         case 'sink':
-            return '\uf0ce';
+            return 'bi-download';
         case 'project':
-            return '\uf12b';
+            return 'bi-kanban';
         case 'read':
-            return '\uf1c0';
+            return 'bi-eye';
         case 'join':
-            return '\uf126';
+            return 'bi-sign-intersection-y';
     }
 }
 
@@ -140,21 +140,22 @@ function drawGraph(pre_nodes, pre_links, use_drag=true) {
             return nodeColor(d.type);
         }).style("stroke-opacity", 0.3);
 
-    // adding icon in node
-    node.append("text")
-        .attr('class', 'fa')
-        .attr("x", -3.5)
-        .attr("y", 3)
-        .attr("dx", "-0.15em")
-        .attr("dy", "0.2em")
-        .text(function (d) {
-            return nodeIcon(d.type);
+    // adding icon in node    
+    node.append('svg:foreignObject')
+        .attr("width", 50)
+        .attr("height", 50)
+        .attr("x",-7)
+        .attr("y",-15)
+        .style("color", "white")
+        .html(function(d) {
+            return '<i class="bi '+nodeIcon(d.type)+'"></i>';
         });
 
 
     // displaying node data on click
     node.on("click", function (d) {
         let node = document.getElementById('nodeData');
+        console.log("printing d", d)
         let nodeData = pre_nodes.get(d['target']['__data__']['name']);
         console.log(nodeData);
         node.innerHTML = "<h3>" + typeToLabel(nodeData.type) + " Node</h3>";
@@ -287,7 +288,7 @@ function drawGraph(pre_nodes, pre_links, use_drag=true) {
     for (let i = 0; i < nodes.length; ++i) {
         if (!nodeSet.has(nodes[i].type)) {
             nodeSet.add(nodes[i].type);
-            graphIndex.innerHTML += nodeIcon(nodes[i].type) + "&nbsp" + nodes[i].type + " node &nbsp&nbsp&nbsp";
+            graphIndex.innerHTML +=  '<i class="bi '+ nodeIcon(nodes[i].type) + '"></i>' + "&nbsp" + nodes[i].type + " node &nbsp&nbsp&nbsp";
         }
     }
 
