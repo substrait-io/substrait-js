@@ -155,7 +155,6 @@ function drawGraph(pre_nodes, pre_links, use_drag=true) {
     // displaying node data on click
     node.on("click", function (d) {
         let node = document.getElementById('nodeData');
-        console.log("printing d", d)
         let nodeData = pre_nodes.get(d['target']['__data__']['name']);
         console.log(nodeData);
         node.innerHTML = "<h3>" + typeToLabel(nodeData.type) + " Node</h3>";
@@ -282,16 +281,32 @@ function drawGraph(pre_nodes, pre_links, use_drag=true) {
          .call(drag(force));  
      }
 
-    // for index mentioning node icons
+    // for legend mentioning node icons
     const nodeSet = new Set();
-    var graphIndex = document.getElementById("index");
     for (let i = 0; i < nodes.length; ++i) {
-        if (!nodeSet.has(nodes[i].type)) {
-            nodeSet.add(nodes[i].type);
-            graphIndex.innerHTML +=  '<i class="bi '+ nodeIcon(nodes[i].type) + '"></i>' + "&nbsp" + nodes[i].type + " node &nbsp&nbsp&nbsp";
-        }
+        nodeSet.add(nodes[i].type);
     }
 
+    var legend = svg.selectAll(".legend")
+        .data(nodeSet)
+        .enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i) { return "translate(0," + i * 30 + ")"; });
+
+    legend.append("rect")
+        .attr("x", -2)
+        .attr("width", 50)
+        .attr("height", 50)
+        .style("fill","transparent");
+
+    legend.append('svg:foreignObject')
+        .attr("width", 100)
+        .attr("height", 100)
+        .attr("y",-4)
+        .style("color", "black")
+        .html(function(d) {
+            return '<i class="bi ' + nodeIcon(d) + '"></i>' + " "+ d;
+        });
 }
 
 module.exports = {
