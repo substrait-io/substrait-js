@@ -86,7 +86,7 @@ function typeToLabel(nodeType) {
 }
 
 // Drawing Graph using d3JS
-function drawGraph(pre_nodes, pre_links) {
+function drawGraph(pre_nodes, pre_links, use_drag=true) {
 
     let width = 960,
         height = 375;
@@ -131,10 +131,9 @@ function drawGraph(pre_nodes, pre_links) {
     const node = svg.append("g")
         .selectAll("g")
         .data(nodes)
-        .join("g")
-        .call(drag(force));
-   
-        // specifying node shape and color
+        .join("g");
+
+    // specifying node shape and color
     node.append("circle")
         .attr("r", 25)
         .style("fill", (d) => {
@@ -276,6 +275,11 @@ function drawGraph(pre_nodes, pre_links) {
             .on("drag", dragged)
             .on("end", dragended);
     }
+
+    if(use_drag){
+        node
+         .call(drag(force));  
+     }
 
     // for index mentioning node icons
     const nodeSet = new Set();
