@@ -87,9 +87,9 @@ function typeToLabel(nodeType) {
 
 // Drawing Graph using d3JS
 function drawGraph(pre_nodes, pre_links) {
+
     let width = 960,
         height = 375;
-
     let nodes = processNodes(pre_nodes);
     let links = processEdges(nodes, pre_links);
 
@@ -101,8 +101,8 @@ function drawGraph(pre_nodes, pre_links) {
         .force('collide', d3.forceCollide(d => 55))
 
     var svg = d3.select("svg")
-        .attr("width", width)
-        .attr("height", height);
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 960 375");
 
     // For arrowheads in edges
     svg.append('defs').append('marker')
@@ -133,8 +133,8 @@ function drawGraph(pre_nodes, pre_links) {
         .data(nodes)
         .join("g")
         .call(drag(force));
-
-    // specifying node shape and color
+   
+        // specifying node shape and color
     node.append("circle")
         .attr("r", 25)
         .style("fill", (d) => {
