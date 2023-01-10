@@ -1,6 +1,39 @@
 @import "custom";
 @import "~bootstrap/scss/bootstrap";
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css");
 
 html {
-    height: 100%;
+  height: 100%;
+}
+
+path.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+text {
+  fill: white;
+  font: 10px sans-serif;
+  pointer-events: none;
+}
+
+table,
+th,
+td,
+caption {
+  border: 1px solid;
+  width: 100%;
+}
+
+caption {
+  display: table-caption;
+  text-align: center;
+  caption-side: top;
 }
