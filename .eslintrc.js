@@ -1,12 +1,10 @@
 module.exports = {
-  env: {
-    browser: true,
-    commonjs: true,
-    es2021: true,
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
+  extends: [
+    'plugin:@typescript-eslint/recommended'
+  ],
+  rules: {
+    '@typescript-eslint/no-explicit-any':'off'
   },
-  extends: ["google"],
-  parserOptions: {
-    ecmaVersion: "latest",
-  },
-  rules: {},
 };

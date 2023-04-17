@@ -3,7 +3,7 @@ generated/
 node_modules/
 .DS_Store
 node_modules/
-substrait-download/
+substrait-spec/
 
 *.tgz
 *~

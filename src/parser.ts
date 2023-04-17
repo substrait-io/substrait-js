@@ -12,7 +12,11 @@ const JOIN_TYPES = [
 ];
 
 class SubstraitParser {
-  /**
+    
+    idCounters: Map<string, number>
+    extSet: Map<number, string>
+
+   /**
    * Constructs a SubstraitParser
    * @param {Object} plan the Substrait plan
    */
@@ -45,16 +49,18 @@ class SubstraitParser {
   }
 
   /**
-   * Geneate a unique id for the node
+   * Generate a unique id for the node
    * @param {string} type The type of the node
    * @return {string} A unique id
    */
-  nextId(type) {
+  nextId(type:string): string {
     if (!this.idCounters.has(type)) {
       this.idCounters.set(type, 0);
     }
     const value = this.idCounters.get(type);
-    this.idCounters.set(type, value + 1);
+    if(value){
+        this.idCounters.set(type, value + 1);
+    }
     return `${type}_${value}`;
   }
 
@@ -107,7 +113,7 @@ class SubstraitParser {
    * @param {Field[]} fields the fields of the schema
    * @return {Field} a schema field
    */
-  makeSchemaField(fields) {
+  makeSchemaField(fields:any[]) {
     return {
       name: "",
       children: fields,
@@ -122,10 +128,10 @@ class SubstraitParser {
    * @param {Object} emit a potential remapping of fields
    * @return {Field} the remapped output schema
    */
-  applyEmit(schema, emit) {
+  applyEmit(schema:any, emit:any) {
     let outputFields = schema.children;
     if (emit && emit.outputMapping) {
-      outputFields = emit.outputMapping.map((idx) => schema.children[idx]);
+      outputFields = emit.outputMapping.map((idx:any) => schema.children[idx]);
     }
     return this.makeSchemaField(outputFields);
   }
@@ -226,7 +232,7 @@ class SubstraitParser {
    */
   functionArgumentToStr(arg, inp) {
     if (arg.enum) {
-      if (this.hasValue(arg.enum.unspecified)) {
+      if (this.hasValue(inp, arg.enum.unspecified)) {
         return "unspecified";
       }
       return arg.enum.specified;
@@ -358,7 +364,7 @@ class SubstraitParser {
    * @param {Object} exprIn the input to the expression
    * @return {Field} a string representation
    */
-  expressionToStr(expr, exprIn) {
+  expressionToStr(expr:any, exprIn:any) {
     if (expr.selection) {
       return this.referenceToField(expr.selection, exprIn);
     } else if (expr.scalarFunction) {
@@ -377,18 +383,18 @@ class SubstraitParser {
    * @param {Object} project A Substrait ProjectRel
    * @return {PrintNode} a print node
    */
-  projectToNode(project) {
+  projectToNode(project:any) {
     const input = this.relToNode(project.input);
-    const expressions = project.expressions.map((val, idx) => {
+    const expressions = project.expressions.map((val:any, idx:any) => {
       return {
         name: `expressions[${idx}]`,
         field: this.expressionToStr(val, input.schema),
       };
     });
-    const outFields = expressions.map((expr) => expr.field);
+    const outFields = expressions.map((expr:any) => expr.field);
     const fields = input.schema.children.concat(outFields);
     const schema = this.makeSchemaField(fields);
-    const props = expressions.map((expr) => ({
+    const props = expressions.map((expr:any) => ({
       name: expr.name,
       value: expr.field.name,
     }));
@@ -411,8 +417,8 @@ class SubstraitParser {
    * @return {Field} an unnamed field
    */
   typeToField(type) {
-    let typeStr = null;
-    let nullability = true;
+    let typeStr:string;
+    let nullability:number;
     if (type.varchar) {
       typeStr = `VARCHAR<${type.varchar.length}>`;
       nullability = type.varchar.nullability;
@@ -469,7 +475,7 @@ class SubstraitParser {
     if (names.length != types.length) {
       throw new Error("NamedStruct must have one type for each name");
     }
-    const outTypes = [];
+    const outTypes:any[] = [];
     for (let i = 0; i < names.length; i++) {
       const type = this.typeToField(types[i]);
       type.name = names[i];
@@ -523,7 +529,7 @@ class SubstraitParser {
   fetchToNode(fetch) {
     const input = this.relToNode(fetch.input);
     const schema = input.schema;
-    const props = [];
+    const props: {name: string, value: number}[]= [];
     if (this.hasValue(fetch, "offset")) {
       props.push({ name: "offset", value: fetch.offset });
     }
@@ -604,8 +610,8 @@ class SubstraitParser {
    */
   aggToNode(agg) {
     const input = this.relToNode(agg.input);
-    const props = [];
-    const fields = [];
+    const props: {name: string, value: any}[] = [];
+    const fields: any[] = [];
     agg.groupings.forEach((grouping, idx) => {
       for (const groupingExpr of grouping.groupingExpressions) {
         const groupingField = this.expressionToStr(groupingExpr, input.schema);
@@ -653,7 +659,7 @@ class SubstraitParser {
    */
   filterToNode(filt) {
     const input = this.relToNode(filt.input);
-    const props = [];
+    const props: {name: string, value: any}[]= [];
     const schema = input.schema;
     if (filt.condition) {
       props.push({
@@ -678,7 +684,7 @@ class SubstraitParser {
   joinToNode(join) {
     const left = this.relToNode(join.left);
     const right = this.relToNode(join.right);
-    const props = [];
+    const props: {name: string, value: any}[] = [];
     const schema = this.makeSchemaField(
       left.schema.children.concat(right.schema.children)
     );
@@ -746,12 +752,12 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   planToNode(plan) {
-    const nodes = [];
+    const nodes: any[] = [];
     for (const relation of plan.relations) {
       if (relation.root) {
         nodes.push(this.rootRelToNode(relation.root));
       } else {
-        throw new Error(`Unrecognized plan relation ${JSON.stringify(rel)}`);
+        throw new Error(`Unrecognized plan relation ${JSON.stringify(relation)}`);
       }
     }
     const schema = this.makeSchemaField([]);
