@@ -6,8 +6,10 @@
   "scripts": {
     "clean": "rimraf dist",
     "transpile": "tsc",
+    "make-dist": "mkdirp dist",
     "proto": "pbjs --target static-module --path substrait-spec/proto -o dist/index.js substrait/plan.proto",
-    "prepare": "npm run clean && npm run transpile && npm run proto",
+    "transpileProto":"pbts -o dist/definitions.d.ts dist/index.js",
+    "prepare": "npm run clean && npm run make-dist && npm run proto && npm run transpileProto && npm run transpile",
     "lint": "eslint '**/*.ts'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

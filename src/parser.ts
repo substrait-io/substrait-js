@@ -1,5 +1,7 @@
 "use strict";
 
+import { substrait } from "../dist/definitions"
+
 const JOIN_TYPES = [
   "unspecified",
   "inner",
@@ -20,7 +22,7 @@ class SubstraitParser {
    * Constructs a SubstraitParser
    * @param {Object} plan the Substrait plan
    */
-  constructor(plan) {
+  constructor(plan:substrait.Plan) {
     this.idCounters = new Map();
     this.extSet = this.buildExtensionSet(plan);
   }
@@ -30,7 +32,7 @@ class SubstraitParser {
    * @param {Object} plan the Substrait plan
    * @return {Map<number, string>} the created mapping
    */
-  buildExtensionSet(plan) {
+  buildExtensionSet(plan:substrait.Plan) {
     const extSet = new Map();
     const urisMap = new Map();
     for (const extensionUri of plan.extensionUris) {
@@ -39,7 +41,7 @@ class SubstraitParser {
     for (const extensionDecl of plan.extensions) {
       if (extensionDecl.extensionFunction) {
         const func = extensionDecl.extensionFunction;
-        const name = func.name.substring(0, func.name.indexOf(":"));
+        const name = func.name?.substring(0, func.name.indexOf(":"));
         // TODO(weston) find some way to make URIs expandable
         // const uri = urisMap.get(func.extensionUriReference);
         extSet.set(func.functionAnchor, `${name}`);
@@ -113,7 +115,7 @@ class SubstraitParser {
    * @param {Field[]} fields the fields of the schema
    * @return {Field} a schema field
    */
-  makeSchemaField(fields:any[]) {
+  makeSchemaField(fields) {
     return {
       name: "",
       children: fields,
@@ -146,7 +148,7 @@ class SubstraitParser {
    * @param {Object} emit the Substrait emit for the node
    * @return {PrintNode} a print node
    */
-  makePrintNode(type, inputs, props, schema, emit) {
+  makePrintNode(type:string, inputs, props, schema, emit) {
     const emitSchema = this.applyEmit(schema, emit);
     return {
       id: this.nextId(type),
@@ -192,7 +194,7 @@ class SubstraitParser {
    * @param {Object} exprIn the input to the expression
    * @return {Field} a stringified representation
    */
-  structFieldToField(field, exprIn) {
+  structFieldToField(field:substrait.NamedStruct, exprIn) {
     return this.structFieldHelper(field, "", exprIn);
   }
 
@@ -251,9 +253,9 @@ class SubstraitParser {
    * @param {Map<string,string>} extSet an extension set
    * @return {string} a string version of the reference
    */
-  functionRefToName(ref) {
+  functionRefToName(ref:number): string {
     if (this.extSet.has(ref)) {
-      return this.extSet.get(ref);
+      return this.extSet.get(ref)!;
     }
     return "unknown";
   }
@@ -264,7 +266,7 @@ class SubstraitParser {
    * @param {Field} schema The input type
    * @return {string} A string representation
    */
-  argsToString(func, schema) {
+  argsToString(func, schema): string {
     let args = [];
     if (func.arguments && func.arguments.length > 0) {
       args = func.arguments.map((arg) =>
@@ -364,7 +366,7 @@ class SubstraitParser {
    * @param {Object} exprIn the input to the expression
    * @return {Field} a string representation
    */
-  expressionToStr(expr:any, exprIn:any) {
+  expressionToStr(expr:substrait.IExpression, exprIn:any) {
     if (expr.selection) {
       return this.referenceToField(expr.selection, exprIn);
     } else if (expr.scalarFunction) {
@@ -383,9 +385,9 @@ class SubstraitParser {
    * @param {Object} project A Substrait ProjectRel
    * @return {PrintNode} a print node
    */
-  projectToNode(project:any) {
-    const input = this.relToNode(project.input);
-    const expressions = project.expressions.map((val:any, idx:any) => {
+  projectToNode(project:substrait.IProjectRel) {
+    const input = this.relToNode(project.input!);
+    const expressions = project.expressions?.map((val:any, idx:any) => {
       return {
         name: `expressions[${idx}]`,
         field: this.expressionToStr(val, input.schema),
@@ -398,13 +400,13 @@ class SubstraitParser {
       name: expr.name,
       value: expr.field.name,
     }));
-    const inputs = [this.relToNode(project.input)];
+    const inputs = [this.relToNode(project.input!)];
     return this.makePrintNode(
       "project",
       inputs,
       props,
       schema,
-      project.common.emit
+      project.common?.emit
     );
   }
 
@@ -469,16 +471,16 @@ class SubstraitParser {
    * @param {Object} struct a Substrait named struct
    * @return {Field[]} named fields
    */
-  namedStructToSchema(struct) {
+  namedStructToSchema(struct:substrait.INamedStruct) {
     const names = struct.names;
-    const types = struct.struct.types;
-    if (names.length != types.length) {
+    const types = struct.struct?.types;
+    if (names?.length != types?.length) {
       throw new Error("NamedStruct must have one type for each name");
     }
     const outTypes:any[] = [];
-    for (let i = 0; i < names.length; i++) {
-      const type = this.typeToField(types[i]);
-      type.name = names[i];
+    for (let i = 0; i < names!.length; i++) {
+      const type = this.typeToField(types![i]);
+      type.name = names![i];
       outTypes.push(type);
     }
     return this.makeSchemaField(outTypes);
@@ -489,9 +491,9 @@ class SubstraitParser {
    * @param {Object} read a Substrait read relation
    * @return {SimpleProperty[]} properties for the relation
    */
-  readTypeToProps(read) {
+  readTypeToProps(read:substrait.IReadRel) {
     if (read.namedTable) {
-      const tableName = read.namedTable.names.join(".");
+      const tableName = read.namedTable.names?.join(".");
       return [{ name: "namedTable.names", value: tableName }];
     } else {
       throw new Error(`Unrecognized read type: ${JSON.stringify(read)}`);
@@ -503,10 +505,10 @@ class SubstraitParser {
    * @param {Object} read a Substrait read relation
    * @return {PrintNode} a print node
    */
-  readToNode(read) {
-    const schema = this.namedStructToSchema(read.baseSchema);
+  readToNode(read:substrait.IReadRel) {
+    const schema = this.namedStructToSchema(read.baseSchema!);
     const props = this.readTypeToProps(read);
-    return this.makePrintNode("read", [], props, schema, read.common.emit);
+    return this.makePrintNode("read", [], props, schema, read.common?.emit);
   }
 
   /**
@@ -515,7 +517,7 @@ class SubstraitParser {
    * @param {string} fieldName the field name to look for
    * @return {boolean} the result of the test
    */
-  hasValue(obj, fieldName) {
+  hasValue(obj, fieldName:string) {
     // Technically `undefined` shouldn't be possible because
     // of how protobuf works but it can't hurt to check;
     return obj[fieldName] !== null && obj[fieldName] !== undefined;
@@ -580,16 +582,16 @@ class SubstraitParser {
    * @param {Object} sort a Substrait sort relation
    * @return {PrintNode} a print node
    */
-  sortToNode(sort) {
-    const input = this.relToNode(sort.input);
+  sortToNode(sort:substrait.ISortRel) {
+    const input = this.relToNode(sort.input!);
     const schema = input.schema;
-    const props = sort.sorts.map((sort, idx) => {
+    const props = sort.sorts?.map((sort, idx) => {
       return {
         name: `sorts[${idx}]`,
         value: this.sortFieldToStr(sort, schema),
       };
     });
-    return this.makePrintNode("sort", [input], props, schema, sort.common.emit);
+    return this.makePrintNode("sort", [input], props, schema, sort.common?.emit);
   }
 
   /**
@@ -598,7 +600,7 @@ class SubstraitParser {
    * @param {Field} inp the input field
    * @return {Field} a field representation of the function
    */
-  aggregateFunctionToField(func, inp) {
+  aggregateFunctionToField(func:substrait.IAggregateFunction, inp) {
     // TODO (weston) sorts, phases, invocation
     return this.scalarFunctionToField(func, inp);
   }
@@ -608,20 +610,20 @@ class SubstraitParser {
    * @param {Object} agg a Substrait aggregate relation
    * @return {PrintNode} a print node
    */
-  aggToNode(agg) {
-    const input = this.relToNode(agg.input);
+  aggToNode(agg:substrait.IAggregateRel) {
+    const input = this.relToNode(agg.input!);
     const props: {name: string, value: any}[] = [];
     const fields: any[] = [];
-    agg.groupings.forEach((grouping, idx) => {
-      for (const groupingExpr of grouping.groupingExpressions) {
+    agg.groupings?.forEach((grouping, idx) => {
+      for (const groupingExpr of grouping.groupingExpressions!) {
         const groupingField = this.expressionToStr(groupingExpr, input.schema);
         props.push({ name: `grouping[${idx}]`, value: groupingField.name });
         fields.push(groupingField);
       }
     });
-    agg.measures.forEach((measure, idx) => {
+    agg.measures?.forEach((measure, idx) => {
       const aggregate = this.aggregateFunctionToField(
-        measure.measure,
+        measure.measure!,
         input.schema
       );
       fields.push(aggregate);
@@ -648,7 +650,7 @@ class SubstraitParser {
       [input],
       props,
       schema,
-      agg.common.emit
+      agg.common?.emit
     );
   }
 
@@ -657,8 +659,8 @@ class SubstraitParser {
    * @param {Object} filt a Substrait filter relation
    * @return {PrintNode} a print node
    */
-  filterToNode(filt) {
-    const input = this.relToNode(filt.input);
+  filterToNode(filt:substrait.IFilterRel) {
+    const input = this.relToNode(filt.input!);
     const props: {name: string, value: any}[]= [];
     const schema = input.schema;
     if (filt.condition) {
@@ -672,7 +674,7 @@ class SubstraitParser {
       [input],
       props,
       schema,
-      filt.common.emit
+      filt.common?.emit
     );
   }
 
@@ -681,9 +683,9 @@ class SubstraitParser {
    * @param {Object} join a Substrait join relation
    * @return {PrintNode} a print node
    */
-  joinToNode(join) {
-    const left = this.relToNode(join.left);
-    const right = this.relToNode(join.right);
+  joinToNode(join:substrait.IJoinRel) {
+    const left = this.relToNode(join.left!);
+    const right = this.relToNode(join.right!);
     const props: {name: string, value: any}[] = [];
     const schema = this.makeSchemaField(
       left.schema.children.concat(right.schema.children)
@@ -702,7 +704,7 @@ class SubstraitParser {
       [left, right],
       props,
       schema,
-      join.common.emit
+      join.common?.emit
     );
   }
 
@@ -711,7 +713,7 @@ class SubstraitParser {
    * @param {Object} rel the Substrait relation to convert
    * @return {PrintNode} a print node
    */
-  relToNode(rel) {
+  relToNode(rel:substrait.IRel) {
     if (rel.project) {
       return this.projectToNode(rel.project);
     } else if (rel.read) {
@@ -751,7 +753,7 @@ class SubstraitParser {
    * @param {Object} plan the Substrait plan to convert
    * @return {PrintNode} a print node
    */
-  planToNode(plan) {
+  planToNode(plan:substrait.Plan) {
     const nodes: any[] = [];
     for (const relation of plan.relations) {
       if (relation.root) {
