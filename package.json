@@ -4,12 +4,10 @@
   "description": "Packages Substrait protobuf files into a static module.",
   "main": "dist/index.js",
   "scripts": {
-    "clean": "rimraf substrait-spec dist",
+    "clean": "rimraf dist",
     "transpile": "tsc",
-    "predownload": "chmod +x dist/download.js",
-    "download": "dist/download.js",
     "proto": "pbjs --target static-module --path substrait-spec/proto -o dist/index.js substrait/plan.proto",
-    "prepare": "npm run clean && npm run transpile && npm run predownload && npm run download && npm run proto",
+    "prepare": "npm run clean && npm run transpile && npm run proto",
     "lint": "eslint '**/*.ts'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
