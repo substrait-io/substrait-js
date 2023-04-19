@@ -9,6 +9,7 @@ Clone the github repository
 ```
 git clone https://github.com/substrait-io/substrait-js.git
 cd substrait-js/
+git submodule update --init --recursive
 ```
 
 Installation includes the following steps:
