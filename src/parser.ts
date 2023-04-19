@@ -255,7 +255,7 @@ class SubstraitParser {
    */
   functionRefToName(ref:number): string {
     if (this.extSet.has(ref)) {
-      return this.extSet.get(ref)!;
+      return this.extSet.hasOwnProperty(ref) ? this.extSet[ref] : ''
     }
     return "unknown";
   }
