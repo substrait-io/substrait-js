@@ -186,17 +186,26 @@ class SubstraitParser {
    * @return {Field} a stringified represenstation
    */
   structFieldHelper(field:substrait.Expression.ReferenceSegment.IStructField, currentName:string, currentField:Field):Field {
+    if(!field.field){
+      throw new Error("fieldNum cannot be defined to convert "+currentName)
+    }
     const fieldNum = field.field;
     const fieldName = currentField.name ? currentField.name : `$${fieldNum}`;
+    if(!fieldName){
+      throw new Error("FieldName cannot be defined to convert "+currentName)
+    }
     const nextName = `${currentName}${fieldName}`;
     if (field.child) {
+      if(!field.child.structField){
+        throw new Error("Field " + fieldName + "child has undefined struct field")
+      }
       return this.structFieldHelper(
-        field.child.structField!,
+        field.child.structField,
         `${nextName}.`,
-        currentField.children[fieldNum!]
+        currentField.children[fieldNum]
       );
     }
-    return currentField.children[fieldNum!];
+    return currentField.children[fieldNum];
   }
 
   /**
@@ -300,8 +309,14 @@ class SubstraitParser {
    */
   scalarFunctionToField(func:substrait.Expression.IScalarFunction, schema:Field):Field {
     const argsString = this.argsToString(func, schema);
-    const outputType = this.typeToField(func.outputType!);
-    const functionName = this.functionRefToName(func.functionReference!);
+    if(!func.outputType){
+      throw new Error("Function to convert has undefined output type")
+    }
+    const outputType = this.typeToField(func.outputType);
+    if(!func.functionReference){
+      throw new Error("Function to convert has undefined reference")
+    }
+    const functionName = this.functionRefToName(func.functionReference);
     const fieldName = `${functionName}(${argsString})`;
     outputType.name = fieldName;
     return outputType;
@@ -358,8 +373,14 @@ class SubstraitParser {
    * @return {Field} A field representation
    */
   castToField(cast:substrait.Expression.ICast, schema:Field):Field {
-    const input = this.expressionToStr(cast.input!, schema);
-    const outputType = this.typeToField(cast.type!);
+    if(!cast.input){
+      throw new Error("Cast expression has undefined input")
+    }
+    if(!cast.type){
+      throw new Error("Cast expression has undefined output type")
+    }
+    const input = this.expressionToStr(cast.input, schema);
+    const outputType = this.typeToField(cast.type);
     let fb = "unspecified";
     if (cast.failureBehavior === 1) {
       fb = "or null";
@@ -402,7 +423,10 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   projectToNode(project:substrait.IProjectRel):PrintNode {
-    const input = this.relToNode(project.input!);
+    if(!project.input){
+      throw new Error("Project rel has undefined input")
+    }
+    const input = this.relToNode(project.input);
     const expressions = project.expressions?.map((val:substrait.IExpression, idx:number) => {
       return {
         name: `expressions[${idx}]`,
@@ -410,19 +434,21 @@ class SubstraitParser {
       };
     });
     const outFields = expressions?.map((expr:{name:string, field: Field}) => expr.field);
-    const fields = input.schema.children.concat(outFields!);
+    const fields = input.schema.children.concat(outFields ?? []);
     const schema = this.makeSchemaField(fields);
-    const props = expressions?.map((expr:{name:string, field: Field}) => ({
-      name: expr.name,
-      value: expr.field.name,
-    }));
-    const inputs = [this.relToNode(project.input!)];
+    let props:SimpleProperty[] = [];
+    if(expressions){
+      props = expressions.map((expr:{name:string, field: Field}) => ({
+        name: expr.name,
+        value: expr.field.name,
+      }));
+    }
     return this.makePrintNode(
       "project",
-      inputs,
-      props!,
+      [input],
+      props,
       schema,
-      project.common?.emit!
+      project.common?.emit ?? null
     );
   }
 
@@ -439,28 +465,28 @@ class SubstraitParser {
     let nullability:substrait.Type.Nullability;
     if (type.varchar) {
       typeStr = `VARCHAR<${type.varchar.length}>`;
-      nullability = type.varchar.nullability!;
+      nullability = type.varchar.nullability ?? substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else if (type.fixedChar) {
       typeStr = `FIXEDCHAR<${type.fixedChar.length}>`;
-      nullability = type.fixedChar.nullability!;
+      nullability = type.fixedChar.nullability ?? substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else if (type.date) {
       typeStr = "date";
-      nullability = type.date.nullability!;
+      nullability = type.date.nullability ?? substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else if (type.decimal) {
       typeStr = `DECIMAL<${type.decimal.precision},${type.decimal.scale}>`;
-      nullability = type.decimal.nullability!;
+      nullability = type.decimal.nullability ?? substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else if (type.i32) {
       typeStr = "i32";
-      nullability = type.i32.nullability!;
+      nullability = type.i32.nullability ?? substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else if (type.i64) {
       typeStr = "i64";
-      nullability = type.i64.nullability!;
+      nullability = type.i64.nullability ?? substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else if (type.bool) {
       typeStr = "boolean";
-      nullability = type.bool.nullability!;
+      nullability = type.bool.nullability ?? substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else if (type.string) {
       typeStr = "string";
-      nullability = type.string.nullability!;
+      nullability = type.string.nullability ?? substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else {
       throw new Error(`Unrecognized type: ${JSON.stringify(type)}`);
     }
@@ -494,10 +520,12 @@ class SubstraitParser {
       throw new Error("NamedStruct must have one type for each name");
     }
     const outTypes:Field[] = [];
-    for (let i = 0; i < names!.length; i++) {
-      const type = this.typeToField(types![i]);
-      type.name = names![i];
-      outTypes.push(type);
+    for (let i = 0; i < (names?.length ?? 0); i++) {
+      if(types?.[i]){
+        const type = this.typeToField(types?.[i]);
+        type.name = names?.[i] ?? '';
+        outTypes.push(type);
+      }
     }
     return this.makeSchemaField(outTypes);
   }
@@ -509,8 +537,8 @@ class SubstraitParser {
    */
   readTypeToProps(read:substrait.IReadRel):SimpleProperty[] {
     if (read.namedTable) {
-      const tableName = read.namedTable.names!.join(".");
-      return [{ name: "namedTable.names", value: tableName }];
+      const tableName = read.namedTable.names?.join(".");
+      return [{ name: "namedTable.names", value: tableName ?? ""}];
     } else {
       throw new Error(`Unrecognized read type: ${JSON.stringify(read)}`);
     }
@@ -522,9 +550,12 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   readToNode(read:substrait.IReadRel):PrintNode {
-    const schema = this.namedStructToSchema(read.baseSchema!);
+    if(!read.baseSchema){
+      throw new Error("Read relation has undefined base schema")
+    }
+    const schema = this.namedStructToSchema(read.baseSchema);
     const props = this.readTypeToProps(read);
-    return this.makePrintNode("read", [], props, schema, read.common?.emit!);
+    return this.makePrintNode("read", [], props, schema, read.common?.emit ?? null);
   }
 
   /**
@@ -533,7 +564,7 @@ class SubstraitParser {
    * @param {string} fieldName the field name to look for
    * @return {boolean} the result of the test
    */
-  hasValue(obj:any, fieldName:string):boolean {
+  hasValue(obj: any, fieldName: string): boolean {
     // Technically `undefined` shouldn't be possible because
     // of how protobuf works but it can't hurt to check;
     return obj[fieldName] !== null && obj[fieldName] !== undefined;
@@ -545,21 +576,24 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   fetchToNode(fetch:substrait.IFetchRel):PrintNode {
-    const input = this.relToNode(fetch.input!);
+    if(!fetch.input){
+      throw new Error("Fetch relation has undefined input")
+    }
+    const input = this.relToNode(fetch.input);
     const schema = input.schema;
     const props: SimpleProperty[]= [];
     if (this.hasValue(fetch, "offset")) {
-      props.push({ name: "offset", value: fetch.offset!.toString() });
+      props.push({ name: "offset", value: fetch.offset?.toString() ?? "" });
     }
     if (this.hasValue(fetch, "count")) {
-      props.push({ name: "count", value: fetch.count!.toString() });
+      props.push({ name: "count", value: fetch.count?.toString() ?? "" });
     }
     return this.makePrintNode(
       "fetch",
       [input],
       props,
       schema,
-      fetch.common?.emit!
+      fetch.common?.emit ?? null
     );
   }
 
@@ -570,7 +604,10 @@ class SubstraitParser {
    * @return {SimpleProperty} a property describing the sort
    */
   sortFieldToStr(sortField:substrait.ISortField, schema:Field):SimpleProperty {
-    const exprStr = this.expressionToStr(sortField.expr!, schema).name;
+    if(!sortField.expr){
+      throw new Error("Sort field expression has undefined name")
+    }
+    const exprStr = this.expressionToStr(sortField.expr, schema).name;
     if (sortField.direction) {
       const dir = sortField.direction;
       let sortDesc = "";
@@ -614,15 +651,18 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   sortToNode(sort:substrait.ISortRel):PrintNode {
-    const input = this.relToNode(sort.input!);
+    if(!sort.input){
+      throw new Error("Aggregate relation has undefined input")
+    }
+    const input = this.relToNode(sort.input);
     const schema = input.schema;
     let props:SimpleProperty[] = [];
     if(sort.sorts){
-      props = sort.sorts!.map((sort, idx) => {
+      props = sort.sorts?.map((sort) => {
         return this.sortFieldToStr(sort, schema)
       });
     }
-    return this.makePrintNode("sort", [input], props, schema, sort.common?.emit!);
+    return this.makePrintNode("sort", [input], props, schema, sort.common?.emit ?? null);
   }
 
   /**
@@ -642,28 +682,35 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   aggToNode(agg:substrait.IAggregateRel):PrintNode {
-    const input = this.relToNode(agg.input!);
+    if(!agg.input){
+      throw new Error("Aggregate relation has undefined input")
+    }
+    const input = this.relToNode(agg.input);
     const props: SimpleProperty[] = [];
     const fields: Field[] = [];
-    agg.groupings?.forEach((grouping, idx) => {
-      for (const groupingExpr of grouping.groupingExpressions!) {
+    if(!agg.groupings){
+      throw new Error("Aggregate relation has undefined groupings")
+    }
+    agg.groupings.forEach((grouping, idx) => {
+      for (const groupingExpr of grouping.groupingExpressions ?? []) {
         const groupingField = this.expressionToStr(groupingExpr, input.schema);
         props.push({ name: `grouping[${idx}]`, value: groupingField.name });
         fields.push(groupingField);
       }
     });
     agg.measures?.forEach((measure, idx) => {
-      const aggregate = this.aggregateFunctionToField(
-        measure.measure!,
-        input.schema
-      );
-      fields.push(aggregate);
-      const innerProps = [
-        {
+      const innerProps:SimpleProperty[] = []
+      if(measure.measure){
+        const aggregate = this.aggregateFunctionToField(
+          measure.measure,
+          input.schema
+        );
+        fields.push(aggregate);
+        innerProps.push(       {
           name: "measure",
           value: aggregate.name,
-        },
-      ];
+        });
+      }
       if (measure.filter) {
         innerProps.push({
           name: "filter",
@@ -683,7 +730,7 @@ class SubstraitParser {
       [input],
       props,
       schema,
-      agg.common?.emit!
+      agg.common?.emit ?? null
     );
   }
 
@@ -693,7 +740,12 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   filterToNode(filt:substrait.IFilterRel):PrintNode {
-    const input = this.relToNode(filt.input!);
+    const input = filt.input ? this.relToNode(filt.input) : undefined;
+
+    if (input === undefined) {
+      throw new Error("Filter input is null or undefined");
+    }
+    
     const props: SimpleProperty[]= [];
     const schema = input.schema;
     if (filt.condition) {
@@ -707,7 +759,7 @@ class SubstraitParser {
       [input],
       props,
       schema,
-      filt.common?.emit!
+      filt.common?.emit ?? null
     );
   }
 
@@ -717,8 +769,13 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   joinToNode(join:substrait.IJoinRel):PrintNode {
-    const left = this.relToNode(join.left!);
-    const right = this.relToNode(join.right!);
+    const left = join.left ? this.relToNode(join.left) : undefined;
+    const right = join.right ? this.relToNode(join.right) : undefined;
+    
+    if (left === undefined || right === undefined) {
+      throw new Error("Join nodes are null or undefined");
+    }
+
     const props: SimpleProperty[] = [];
     const schema = this.makeSchemaField(
       left.schema.children.concat(right.schema.children)
@@ -737,7 +794,7 @@ class SubstraitParser {
       [left, right],
       props,
       schema,
-      join.common?.emit!
+      join.common?.emit ?? null
     );
   }
 
@@ -772,13 +829,20 @@ class SubstraitParser {
    * @return {PrintNode} a print node
    */
   rootRelToNode(rel:substrait.IRelRoot):PrintNode {
-    const props:SimpleProperty[] = rel.names!.map((val, idx) => ({
-      name: `name[${idx}]`,
-      value: val,
-    }));
-    const inputs = [this.relToNode(rel.input!)];
-    const schema = this.makeSchemaField([]);
-    return this.makePrintNode("sink", inputs, props, schema, null);
+    const props:SimpleProperty[] =[]
+    if(rel.names != undefined){
+      rel.names.map((val, idx) => ({
+        name: `name[${idx}]`,
+        value: val,
+      }));
+    } 
+    if (rel.input === undefined || rel.input === null){
+      throw new Error("Root relation input was undefined or null")
+    } else {
+      const inputs = [this.relToNode(rel.input)];
+      const schema = this.makeSchemaField([]);
+      return this.makePrintNode("sink", inputs, props, schema, null);
+  }
   }
 
   /**
