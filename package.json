@@ -1,7 +1,7 @@
 {
   "name": "substrait",
   "version": "0.20.0",
-  "description": "Packages Substrait protobuf files into a static module.",
+  "description": "Utilities for working with Substrait plans in Javascript projects",
   "main": "dist/index.js",
   "scripts": {
     "clean": "rimraf dist",
