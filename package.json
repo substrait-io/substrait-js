@@ -1,6 +1,6 @@
 {
   "name": "substrait",
-  "version": "0.20.0",
+  "version": "0.1.0",
   "description": "Utilities for working with Substrait plans in Javascript projects",
   "main": "dist/index.js",
   "scripts": {
