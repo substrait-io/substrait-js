@@ -34,16 +34,16 @@ interface PrintNode {
 
 class SubstraitParser {
     
-    idCounters: Map<string, number>
-    extSet: Map<number, string>
+    private _idCounters: Map<string, number>
+    private _extSet: Map<number, string>
 
    /**
    * Constructs a SubstraitParser
    * @param {Object} plan the Substrait plan
    */
   constructor(plan:substrait.Plan) {
-    this.idCounters = new Map();
-    this.extSet = this.buildExtensionSet(plan);
+    this._idCounters = new Map();
+    this._extSet = this.buildExtensionSet(plan);
   }
 
   /**
@@ -52,7 +52,7 @@ class SubstraitParser {
    * @return {Map<number, string>} the created mapping
    */
   buildExtensionSet(plan:substrait.Plan) {
-    const extSet = new Map();
+    const _extSet = new Map();
     const urisMap = new Map();
     for (const extensionUri of plan.extensionUris) {
       urisMap.set(extensionUri.extensionUriAnchor, extensionUri.uri);
@@ -63,10 +63,10 @@ class SubstraitParser {
         const name = func.name?.substring(0, func.name.indexOf(":"));
         // TODO(weston) find some way to make URIs expandable
         // const uri = urisMap.get(func.extensionUriReference);
-        extSet.set(func.functionAnchor, `${name}`);
+        _extSet.set(func.functionAnchor, `${name}`);
       }
     }
-    return extSet;
+    return _extSet;
   }
 
   /**
@@ -75,12 +75,12 @@ class SubstraitParser {
    * @return {string} A unique id
    */
   nextId(type:string): string {
-    if (!this.idCounters.has(type)) {
-      this.idCounters.set(type, 0);
+    if (!this._idCounters.has(type)) {
+      this._idCounters.set(type, 0);
     }
-    const value = this.idCounters.get(type);
+    const value = this._idCounters.get(type);
     if(value){
-        this.idCounters.set(type, value + 1);
+        this._idCounters.set(type, value + 1);
     }
     return `${type}_${value}`;
   }
@@ -275,12 +275,12 @@ class SubstraitParser {
   /**
    * Converts a Substrait function reference to a string
    * @param {number} ref a Substrait function reference
-   * @param {Map<string,string>} extSet an extension set
+   * @param {Map<string,string>} _extSet an extension set
    * @return {string} a string version of the reference
    */
   functionRefToName(ref:number): string {
-    if (this.extSet.has(ref)) {
-      return this.extSet.has(ref) ? (this.extSet.get(ref) || '') : '';
+    if (this._extSet.has(ref)) {
+      return this._extSet.has(ref) ? (this._extSet.get(ref) || '') : '';
     }
     return "unknown";
   }
