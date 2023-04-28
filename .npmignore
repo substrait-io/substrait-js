@@ -1,5 +1,3 @@
 node_modules/
 scripts/
 substrait-spec/
-dist/.gitignore
-dist/
