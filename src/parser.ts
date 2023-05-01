@@ -1,6 +1,6 @@
 "use strict";
 
-import { substrait } from "../dist/definitions"
+import { substrait } from "./generated/definitions"
 
 const JOIN_TYPES = [
   "unspecified",
@@ -32,7 +32,7 @@ interface PrintNode {
   schema: Field,
 }
 
-class SubstraitParser {
+export class SubstraitParser {
     
     private _idCounters: Map<string, number>
     private _extSet: Map<number, string>
@@ -863,7 +863,3 @@ class SubstraitParser {
     return this.makePrintNode("plan", nodes, [], schema, null);
   }
 }
-
-module.exports = {
-  SubstraitParser,
-};
