@@ -24,7 +24,7 @@ interface SimpleProperty{
   name: string,
   value: string 
 }
-interface PrintNode {
+export interface PrintNode {
   id: string,
   type: string,
   inputs: PrintNode[],

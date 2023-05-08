@@ -18,9 +18,11 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "d3": "^7.8.4",
     "protobufjs": "^6.11.3"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.0",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
     "download-git-repo": "^0.0.2",
