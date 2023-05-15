@@ -2,7 +2,6 @@
 
 import * as d3 from "d3";
 import icons from "./assets/icons.json";
-import { substrait } from "./generated/definitions"
 import { PrintNode } from "./parser"
 
 interface Node extends d3.SimulationNodeDatum {
@@ -20,9 +19,9 @@ function createNodeIdToNodeMap(plan:PrintNode, nodes:Map<string, PrintNode>) {
 
 // Building graph from Substrait Plan
 function buildGraph(plan:PrintNode) {
-  let nodes = new Map<string, PrintNode>();
+  const nodes = new Map<string, PrintNode>();
   createNodeIdToNodeMap(plan.inputs[0], nodes);
-  let edges:{source: string, target: string}[] = [];
+  const edges:{source: string, target: string}[] = [];
   nodes.forEach((value) => {
     for (let i = 0; i < value.inputs.length; ++i) {
       edges.push({ source: value.inputs[i].id, target: value.id });
@@ -36,7 +35,7 @@ function buildGraph(plan:PrintNode) {
 
 // Processing nodes for d3JS forcedSimulation's format
 function processNodes(nodes: Map<string, PrintNode>) {
-  let processedNodes:Node[] = [];
+  const processedNodes:Node[] = [];
   nodes.forEach((value) => {
     processedNodes.push({ name: value.id, type: value.type });
   });
@@ -45,10 +44,10 @@ function processNodes(nodes: Map<string, PrintNode>) {
 
 // Processing edges for d3JS forcedSimulation's format
 function processEdges(nodes: { name: string, type: string}[], links: {source: string, target: string}[]) {
-  let processedLinks = [];
+  const processedLinks = [];
   for (let i = 0; i < links.length; ++i) {
-    let source = nodes.findIndex((j) => j.name === links[i].source);
-    let target = nodes.findIndex((j) => j.name === links[i].target);
+    const source = nodes.findIndex((j) => j.name === links[i].source);
+    const target = nodes.findIndex((j) => j.name === links[i].target);
     processedLinks.push({ source, target });
   }
   return processedLinks;
@@ -96,14 +95,14 @@ function typeToLabel(nodeType:string) {
 }
 
 // Drawing Graph using d3JS
-function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, target: string}[], use_drag = true) {
-  let width = 960,
+function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, target: string}[], use_drag = true, print_info = false) {
+  const width = 960,
     height = 375;
-  let nodes = processNodes(pre_nodes);
-  let links = processEdges(nodes, pre_links);
+  const nodes = processNodes(pre_nodes);
+  const links = processEdges(nodes, pre_links);
 
   // Instantiating a Force Simulation
-  var force = d3
+  const force = d3
     .forceSimulation(nodes)
     .force("charge", d3.forceManyBody().strength(-100))
     .force("center", d3.forceCenter(width / 2, height / 2))
@@ -113,7 +112,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
       d3.forceCollide(() => 55)
     );
 
-  var svg = d3
+  const svg = d3
     .select("svg")
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 960 375");
@@ -165,108 +164,110 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
     .attr("y", -15)
     .style("color", "white")
     .html(function (d) {
-      let str =
+      const str =
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
         nodeIcon(d.type) +
         "</svg>";
       return str;
     });
 
-  // displaying node data on click
-  node.on("click", function (d) {
-    let node = document.getElementById("nodeData");
-    if(!node){
-        throw new Error("Object nodeData was not created in DOM")
-    }
-
-    let nodeData = pre_nodes.get(d["currentTarget"]["__data__"]["name"]);
-    if(!nodeData){
-      throw new Error("Current target not found in nodes map")
-    }
-    
-    node.innerHTML = "<h3>" + typeToLabel(nodeData.type) + " Node</h3>";
-    node!.innerHTML += "<h5>Node Name:" + nodeData.id + "</h5>";
-
-    if (nodeData.inputs.length) {
-      node.innerHTML += "<b>Inputs:</b> ";
-      for (let i = 0; i < nodeData.inputs.length; ++i) {
-        node.innerHTML += nodeData.inputs[i].id + ", ";
+  if(print_info){
+    // displaying node data on click
+    node.on("click", function (d) {
+      const node = document.getElementById("nodeData");
+      if(!node){
+          throw new Error("Object nodeData was not created in DOM")
       }
-      node.innerHTML = node.innerHTML.substring(0, node.innerHTML.length - 2);
-    }
 
-    if (nodeData.props.length) {
-      node.innerHTML += "<br><br>";
-      var propsTable = document.createElement("table");
-      var propsTableHead = document.createElement("thead");
-      var propsTableBody = document.createElement("tbody");
-      var propsTableCaption = document.createElement("caption");
-      propsTableCaption.innerHTML = "Properties";
-      propsTable.appendChild(propsTableCaption);
-      propsTable.appendChild(propsTableHead);
-      propsTable.appendChild(propsTableBody);
-
-      let row = document.createElement("tr");
-      let heading_1 = document.createElement("th");
-      let heading_2 = document.createElement("th");
-      heading_1.innerHTML = "Name";
-      heading_2.innerHTML = "Value";
-      row.appendChild(heading_1);
-      row.appendChild(heading_2);
-      propsTableHead.append(row);
-
-      for (let i = 0; i < nodeData.props.length; ++i) {
-        row = document.createElement("tr");
-        let data_1 = document.createElement("td");
-        let data_2 = document.createElement("td");
-        data_1.innerHTML = nodeData.props[i].name;
-        data_2.innerHTML = nodeData.props[i].value;
-        row.appendChild(data_1);
-        row.appendChild(data_2);
-        propsTableBody.appendChild(row);
+      const nodeData = pre_nodes.get(d["currentTarget"]["__data__"]["name"]);
+      if(!nodeData){
+        throw new Error("Current target not found in nodes map")
       }
-      node.appendChild(propsTable);
-    }
+      
+      node.innerHTML = "<h3>" + typeToLabel(nodeData.type) + " Node</h3>";
+      node.innerHTML += "<h5>Node Name:" + nodeData.id + "</h5>";
 
-    if (nodeData.schema.children.length) {
-      node.innerHTML += "<br>";
-      var childrenTable = document.createElement("table");
-      var childrenTableHead = document.createElement("thead");
-      var childrenTableBody = document.createElement("tbody");
-      var childrenTableCaption = document.createElement("caption");
-      childrenTableCaption.innerHTML = "Output Schema";
-      childrenTable.appendChild(childrenTableCaption);
-      childrenTable.appendChild(childrenTableHead);
-      childrenTable.appendChild(childrenTableBody);
-
-      let row = document.createElement("tr");
-      let heading_1 = document.createElement("th");
-      let heading_2 = document.createElement("th");
-      let heading_3 = document.createElement("th");
-      heading_1.innerHTML = "Name";
-      heading_2.innerHTML = "Type";
-      heading_3.innerHTML = "Nullability";
-      row.appendChild(heading_1);
-      row.appendChild(heading_2);
-      row.appendChild(heading_3);
-      childrenTableHead.append(row);
-
-      for (let i = 0; i < nodeData.schema.children.length; ++i) {
-        row = document.createElement("tr");
-        let data_1 = document.createElement("td");
-        let data_2 = document.createElement("td");
-        let data_3 = document.createElement("td");
-        data_1.innerHTML = nodeData.schema.children[i].name;
-        data_2.innerHTML = nodeData.schema.children[i].type;
-        data_3.innerHTML = nodeData.schema.children[i].nullability;
-        row.appendChild(data_1);
-        row.appendChild(data_2);
-        row.appendChild(data_3);
-        childrenTableBody.appendChild(row);
+      if (nodeData.inputs.length) {
+        node.innerHTML += "<b>Inputs:</b> ";
+        for (let i = 0; i < nodeData.inputs.length; ++i) {
+          node.innerHTML += nodeData.inputs[i].id + ", ";
+        }
+        node.innerHTML = node.innerHTML.substring(0, node.innerHTML.length - 2);
       }
-      node.appendChild(childrenTable);
-    }
-  });
+
+      if (nodeData.props.length) {
+        node.innerHTML += "<br><br>";
+        const propsTable = document.createElement("table");
+        const propsTableHead = document.createElement("thead");
+        const propsTableBody = document.createElement("tbody");
+        const propsTableCaption = document.createElement("caption");
+        propsTableCaption.innerHTML = "Properties";
+        propsTable.appendChild(propsTableCaption);
+        propsTable.appendChild(propsTableHead);
+        propsTable.appendChild(propsTableBody);
+
+        let row = document.createElement("tr");
+        const heading_1 = document.createElement("th");
+        const heading_2 = document.createElement("th");
+        heading_1.innerHTML = "Name";
+        heading_2.innerHTML = "Value";
+        row.appendChild(heading_1);
+        row.appendChild(heading_2);
+        propsTableHead.append(row);
+
+        for (let i = 0; i < nodeData.props.length; ++i) {
+          row = document.createElement("tr");
+          const data_1 = document.createElement("td");
+          const data_2 = document.createElement("td");
+          data_1.innerHTML = nodeData.props[i].name;
+          data_2.innerHTML = nodeData.props[i].value;
+          row.appendChild(data_1);
+          row.appendChild(data_2);
+          propsTableBody.appendChild(row);
+        }
+        node.appendChild(propsTable);
+      }
+
+      if (nodeData.schema.children.length) {
+        node.innerHTML += "<br>";
+        const childrenTable = document.createElement("table");
+        const childrenTableHead = document.createElement("thead");
+        const childrenTableBody = document.createElement("tbody");
+        const childrenTableCaption = document.createElement("caption");
+        childrenTableCaption.innerHTML = "Output Schema";
+        childrenTable.appendChild(childrenTableCaption);
+        childrenTable.appendChild(childrenTableHead);
+        childrenTable.appendChild(childrenTableBody);
+
+        let row = document.createElement("tr");
+        const heading_1 = document.createElement("th");
+        const heading_2 = document.createElement("th");
+        const heading_3 = document.createElement("th");
+        heading_1.innerHTML = "Name";
+        heading_2.innerHTML = "Type";
+        heading_3.innerHTML = "Nullability";
+        row.appendChild(heading_1);
+        row.appendChild(heading_2);
+        row.appendChild(heading_3);
+        childrenTableHead.append(row);
+
+        for (let i = 0; i < nodeData.schema.children.length; ++i) {
+          row = document.createElement("tr");
+          const data_1 = document.createElement("td");
+          const data_2 = document.createElement("td");
+          const data_3 = document.createElement("td");
+          data_1.innerHTML = nodeData.schema.children[i].name;
+          data_2.innerHTML = nodeData.schema.children[i].type;
+          data_3.innerHTML = nodeData.schema.children[i].nullability;
+          row.appendChild(data_1);
+          row.appendChild(data_2);
+          row.appendChild(data_3);
+          childrenTableBody.appendChild(row);
+        }
+        node.appendChild(childrenTable);
+      }
+    });
+  }
 
   // specifying on tick function for the graph
   force.on("tick", () => {
@@ -323,7 +324,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
     nodeSet.add(nodes[i].type);
   }
 
-  var legend = svg
+  const legend = svg
     .selectAll(".legend")
     .data(nodeSet)
     .enter()
@@ -347,7 +348,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
     .attr("y", -4)
     .style("color", "black")
     .html(function (d:unknown) {
-      let str =
+      const str =
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
         nodeIcon(d as string) +
         "</svg> " +
@@ -357,7 +358,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
 }
 
 function clearGraph() {
-  var svg = d3.select("svg");
+  const svg = d3.select("svg");
   svg.html("");
 }
 
