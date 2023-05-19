@@ -129,7 +129,7 @@ export class SubstraitParser {
    * Create a schema field
    *
    * This is a special field with an empty name and an empty type string
-   * and uknown nullability
+   * and unknown nullability
    *
    * @param {Field[]} fields the fields of the schema
    * @return {Field} a schema field
