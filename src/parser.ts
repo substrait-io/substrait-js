@@ -13,6 +13,15 @@ const JOIN_TYPES = [
   "single",
 ];
 
+/**
+ * A named field
+ * @typedef {Object} Field
+ * @param {string} name the name of the field
+ * @param {Field[]} children the children of the field
+ * @param {string} type the data type of the field
+ * @param {string} nullable whether or not the field is nullable
+ *     One of 'unspecified', 'nullable', 'required' or 'unknown'
+ */
 interface Field {
     name: string,
     children: Field[],
@@ -20,10 +29,39 @@ interface Field {
     nullability: string,
 }
 
+/**
+ * A generic, potentially nested, key/value object
+ * @typedef {Object} SimpleProperty
+ * @property {string} name the name of the property
+ * @property {(boolean|string|number|SimpleProperty[])} value the
+ *     value of the property, may be recursive to form a tree of
+ *     key/value pairs.
+ */
 interface SimpleProperty{
   name: string,
   value: string 
 }
+
+/**
+ * A node in a print tree
+ *
+ * A print tree is a simplified representation of a Substrait plan.
+ * This is not capable for a round-trip representation and fidelity is lost
+ * when converting to this form.  It is intended to be an easily consumed
+ * representation of a tree of nodes that any tool can visualize.
+ *
+ * A print tree will maintain the output schema of the node at each step.
+ *
+ * The schema of a node is a special Field instance.  The name and type
+ * are empty strings.  It has children.  The nullability is unspecified.
+ *
+ * @typedef {Object} PrintNode
+ * @param {string} id a unique identifier for the node
+ * @param {string} type the node type (i.e. the relational operator)
+ * @param {PrintNode[]} inputs the inputs to the node
+ * @param {SimpleProperty} props properties describing the node
+ * @param {Field} schema the output schema of the node
+ */
 export interface PrintNode {
   id: string,
   type: string,
@@ -86,46 +124,6 @@ export class SubstraitParser {
   }
 
   /**
-   * A generic, potentially nested, key/value object
-   * @typedef {Object} SimpleProperty
-   * @property {string} name the name of the property
-   * @property {(boolean|string|number|SimpleProperty[])} value the
-   *     value of the property, may be recursive to form a tree of
-   *     key/value pairs.
-   */
-
-  /**
-   * A named field
-   * @typedef {Object} Field
-   * @param {string} name the name of the field
-   * @param {Field[]} children the children of the field
-   * @param {string} type the data type of the field
-   * @param {string} nullable whether or not the field is nullable
-   *     One of 'unspecified', 'nullable', 'required' or 'unknown'
-   */
-
-  /**
-   * A node in a print tree
-   *
-   * A print tree is a simplified representation of a Substrait plan.
-   * This is not a round-trippable representation and fidelity is lost
-   * when converting to this form.  It is intended to be an easily consumed
-   * representation of a tree of nodes that any tool can visualize.
-   *
-   * A print tree will maintain the output schema of the node at each step.
-   *
-   * The schema of a node is a special Field instance.  The name and type
-   * are empty strings.  It has children.  The nullability is unspecified.
-   *
-   * @typedef {Object} PrintNode
-   * @param {string} id a unique identifier for the node
-   * @param {string} type the node type (i.e. the relational operator)
-   * @param {PrintNode[]} inputs the inputs to the node
-   * @param {SimpleProperty} props properties describing the node
-   * @param {Field} schema the output schema of the node
-   */
-
-  /**
    * Create a schema field
    *
    * This is a special field with an empty name and an empty type string
@@ -183,7 +181,7 @@ export class SubstraitParser {
    * @param {*} field the Substrait field to convert
    * @param {*} currentName the current name
    * @param {*} currentField the current input field
-   * @return {Field} a stringified represenstation
+   * @return {Field} a stringified representation
    */
   private structFieldHelper(field:substrait.Expression.ReferenceSegment.IStructField, currentName:string, currentField:Field):Field {
     if(!field.field){
