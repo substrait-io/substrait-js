@@ -2,7 +2,7 @@
 # susbtrait-js
 JS support for Substrait.
 
-## Installation
+## Development setup
 
 Clone the github repository
 
