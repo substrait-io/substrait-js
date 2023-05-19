@@ -1,6 +1,14 @@
 
 # susbtrait-js
-JS support for Substrait.
+Typescript typings for Substrait specifications. Also provides a parser for translating substrait plans.
+
+Substrait is cross-language specification for data compute operations, composed primarily of:
+1. a formal specification
+2. a human readable text representation
+3. a compact cross-language binary representation  
+
+For more details, please visit [substrait.io](https://substrait.io/)  
+Link to the substrait specifications repository: [github.com/substrait-io/substrait](https://github.com/substrait-io/substrait)
 
 ## Development setup
 
