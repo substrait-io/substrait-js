@@ -18,7 +18,8 @@ Installation includes the following steps:
  3. Packaging the specifications to static `.js` module.
 
 ```
-npm install
+npm ci
+npm run build
 ```
     
 ## License
