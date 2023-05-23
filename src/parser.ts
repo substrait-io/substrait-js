@@ -827,9 +827,9 @@ export class SubstraitParser {
    * @return {PrintNode} a print node
    */
   private rootRelToNode(rel:substrait.IRelRoot):PrintNode {
-    const props:SimpleProperty[] =[]
+    let props:SimpleProperty[] =[]
     if(rel.names != undefined){
-      rel.names.map((val, idx) => ({
+      props = rel.names.map((val, idx) => ({
         name: `name[${idx}]`,
         value: val,
       }));
