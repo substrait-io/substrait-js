@@ -1,0 +1,32 @@
+{
+  "name": "substrait",
+  "version": "0.1.0",
+  "description": "Utilities for working with Substrait plans in Javascript projects",
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && npm run make-dist && npm run transpile",
+    "make-dist": "mkdirp dist",
+    "clean-proto": "rimraf src/generated && mkdirp src/generated",
+    "proto": "pbjs --target static-module --path substrait-spec/proto -o src/generated/definitions.js substrait/plan.proto",
+    "transpile": "tsc",
+    "transpileProto": "pbts -o src/generated/definitions.d.ts src/generated/definitions.js",
+    "prepare": "npm run clean-proto && npm run proto && npm run transpileProto",
+    "lint": "eslint '**/*.ts'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "protobufjs": "^6.11.3"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "download-git-repo": "^0.0.2",
+    "eslint": "^8.38.0",
+    "git-clone": "^0.2.0",
+    "mkdirp": "^1.0.4",
+    "rimraf": "^3.0.2"
+  }
+}
