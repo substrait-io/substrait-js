@@ -9,6 +9,11 @@ interface Node extends d3.SimulationNodeDatum {
   type: string;
 }
 
+interface Link {
+  source: string;
+  target: string;
+}
+
 // Populating map with nodes information
 function createNodeIdToNodeMap(plan:PrintNode, nodes:Map<string, PrintNode>) {
   nodes.set(plan.id, plan);
@@ -21,7 +26,7 @@ function createNodeIdToNodeMap(plan:PrintNode, nodes:Map<string, PrintNode>) {
 function buildGraph(plan:PrintNode) {
   const nodes = new Map<string, PrintNode>();
   createNodeIdToNodeMap(plan.inputs[0], nodes);
-  const edges:{source: string, target: string}[] = [];
+  const edges:Link[] = [];
   nodes.forEach((value) => {
     for (let i = 0; i < value.inputs.length; ++i) {
       edges.push({ source: value.inputs[i].id, target: value.id });
@@ -43,7 +48,7 @@ function processNodes(nodes: Map<string, PrintNode>) {
 }
 
 // Processing edges for d3JS forcedSimulation's format
-function processEdges(nodes: { name: string, type: string}[], links: {source: string, target: string}[]) {
+function processEdges(nodes: Node[], links: Link[]) {
   const processedLinks = [];
   for (let i = 0; i < links.length; ++i) {
     const source = nodes.findIndex((j) => j.name === links[i].source);
@@ -95,7 +100,7 @@ function typeToLabel(nodeType:string) {
 }
 
 // Drawing Graph using d3JS
-function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, target: string}[], use_drag = true, print_info = false) {
+function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag = true, print_info = false) {
   const width = 960,
     height = 375;
   const nodes = processNodes(pre_nodes);
@@ -150,7 +155,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
   node
     .append("circle")
     .attr("r", 25)
-    .style("fill", (d) => {
+    .style("fill", (d: Node) => {
       return nodeColor(d.type);
     })
     .style("stroke-opacity", 0.3);
@@ -163,7 +168,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
     .attr("x", -7)
     .attr("y", -15)
     .style("color", "white")
-    .html(function (d) {
+    .html(function (d:Node) {
       const str =
         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">' +
         nodeIcon(d.type) +
@@ -173,7 +178,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
 
   if(print_info){
     // displaying node data on click
-    node.on("click", function (d) {
+    node.on("click", function (d:any) {
       const node = document.getElementById("nodeData");
       if(!node){
           throw new Error("Object nodeData was not created in DOM")
@@ -271,9 +276,9 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
 
   // specifying on tick function for the graph
   force.on("tick", () => {
-    link.attr("d", (d) => {
-      const source = nodes[d.source];
-      const target = nodes[d.target];
+    link.attr("d", (d:any) => {
+      const source:any = nodes[d.source];
+      const target:any = nodes[d.target];
       return (
         "M" +
         source.x +
@@ -285,7 +290,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
         target.y
       );
     });
-    node.attr("transform", (d) => `translate(${d.x},${d.y})`);
+    node.attr("transform", (d:{x:number, y:number}) => `translate(${d.x},${d.y})`);
   });
 
   // network drag simulation
@@ -330,7 +335,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:{source: string, 
     .enter()
     .append("g")
     .attr("class", "legend")
-    .attr("transform", function (d, i) {
+    .attr("transform", function (d:Node, i:number) {
       return "translate(0," + i * 30 + ")";
     });
 
