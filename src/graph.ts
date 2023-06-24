@@ -95,10 +95,6 @@ function nodeIcon(nodeType:string) {
   }
 }
 
-function typeToLabel(nodeType:string) {
-  return nodeType[0].toUpperCase() + nodeType.substring(1);
-}
-
 // Drawing Graph using d3JS
 function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag = true, print_info?: (node: any, pre_nodes: Map<string, PrintNode>) => void) {
   const width = 960,
@@ -241,8 +237,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
     .enter()
     .append("g")
     .attr("class", "legend")
-    .attr("transform", function (this: SVGGElement, d: unknown, i: number) {
-      const nodeData = d as Node;
+    .attr("transform", function (_: unknown, i: number) {
       return `translate(0,${i * 30})`;
     });
 
