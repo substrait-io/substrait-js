@@ -100,7 +100,7 @@ function typeToLabel(nodeType:string) {
 }
 
 // Drawing Graph using d3JS
-function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag = true, print_info = false) {
+function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag = true, print_info?: (node: any, pre_nodes: Map<string, PrintNode>) => void) {
   const width = 960,
     height = 375;
   const nodes = processNodes(pre_nodes);
@@ -177,101 +177,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
     });
 
   if(print_info){
-    // displaying node data on click
-    node.on("click", function (d:any) {
-      const node = document.getElementById("nodeData");
-      if(!node){
-          throw new Error("Object nodeData was not created in DOM")
-      }
-
-      const nodeData = pre_nodes.get(d["currentTarget"]["__data__"]["name"]);
-      if(!nodeData){
-        throw new Error("Current target not found in nodes map")
-      }
-      
-      node.innerHTML = "<h3>" + typeToLabel(nodeData.type) + " Node</h3>";
-      node.innerHTML += "<h5>Node Name:" + nodeData.id + "</h5>";
-
-      if (nodeData.inputs.length) {
-        node.innerHTML += "<b>Inputs:</b> ";
-        for (let i = 0; i < nodeData.inputs.length; ++i) {
-          node.innerHTML += nodeData.inputs[i].id + ", ";
-        }
-        node.innerHTML = node.innerHTML.substring(0, node.innerHTML.length - 2);
-      }
-
-      if (nodeData.props.length) {
-        node.innerHTML += "<br><br>";
-        const propsTable = document.createElement("table");
-        const propsTableHead = document.createElement("thead");
-        const propsTableBody = document.createElement("tbody");
-        const propsTableCaption = document.createElement("caption");
-        propsTableCaption.innerHTML = "Properties";
-        propsTable.appendChild(propsTableCaption);
-        propsTable.appendChild(propsTableHead);
-        propsTable.appendChild(propsTableBody);
-
-        let row = document.createElement("tr");
-        const heading_1 = document.createElement("th");
-        const heading_2 = document.createElement("th");
-        heading_1.innerHTML = "Name";
-        heading_2.innerHTML = "Value";
-        row.appendChild(heading_1);
-        row.appendChild(heading_2);
-        propsTableHead.append(row);
-
-        for (let i = 0; i < nodeData.props.length; ++i) {
-          row = document.createElement("tr");
-          const data_1 = document.createElement("td");
-          const data_2 = document.createElement("td");
-          data_1.innerHTML = nodeData.props[i].name;
-          data_2.innerHTML = nodeData.props[i].value;
-          row.appendChild(data_1);
-          row.appendChild(data_2);
-          propsTableBody.appendChild(row);
-        }
-        node.appendChild(propsTable);
-      }
-
-      if (nodeData.schema.children.length) {
-        node.innerHTML += "<br>";
-        const childrenTable = document.createElement("table");
-        const childrenTableHead = document.createElement("thead");
-        const childrenTableBody = document.createElement("tbody");
-        const childrenTableCaption = document.createElement("caption");
-        childrenTableCaption.innerHTML = "Output Schema";
-        childrenTable.appendChild(childrenTableCaption);
-        childrenTable.appendChild(childrenTableHead);
-        childrenTable.appendChild(childrenTableBody);
-
-        let row = document.createElement("tr");
-        const heading_1 = document.createElement("th");
-        const heading_2 = document.createElement("th");
-        const heading_3 = document.createElement("th");
-        heading_1.innerHTML = "Name";
-        heading_2.innerHTML = "Type";
-        heading_3.innerHTML = "Nullability";
-        row.appendChild(heading_1);
-        row.appendChild(heading_2);
-        row.appendChild(heading_3);
-        childrenTableHead.append(row);
-
-        for (let i = 0; i < nodeData.schema.children.length; ++i) {
-          row = document.createElement("tr");
-          const data_1 = document.createElement("td");
-          const data_2 = document.createElement("td");
-          const data_3 = document.createElement("td");
-          data_1.innerHTML = nodeData.schema.children[i].name;
-          data_2.innerHTML = nodeData.schema.children[i].type;
-          data_3.innerHTML = nodeData.schema.children[i].nullability;
-          row.appendChild(data_1);
-          row.appendChild(data_2);
-          row.appendChild(data_3);
-          childrenTableBody.appendChild(row);
-        }
-        node.appendChild(childrenTable);
-      }
-    });
+    print_info(node, pre_nodes);
   }
 
   // specifying on tick function for the graph
