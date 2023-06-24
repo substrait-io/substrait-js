@@ -182,9 +182,9 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
 
   // specifying on tick function for the graph
   force.on("tick", () => {
-    link.attr("d", (d:any) => {
-      const source:any = nodes[d.source];
-      const target:any = nodes[d.target];
+    link.attr("d", (d: any) => {
+      const source: any = nodes[d.source];
+      const target: any = nodes[d.target];
       return (
         "M" +
         source.x +
@@ -196,7 +196,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
         target.y
       );
     });
-    node.attr("transform", (d:{x:number, y:number}) => `translate(${d.x},${d.y})`);
+    node.attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
   });
 
   // network drag simulation
@@ -241,8 +241,9 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
     .enter()
     .append("g")
     .attr("class", "legend")
-    .attr("transform", function (d:Node, i:number) {
-      return "translate(0," + i * 30 + ")";
+    .attr("transform", function (this: SVGGElement, d: unknown, i: number) {
+      const nodeData = d as Node;
+      return `translate(0,${i * 30})`;
     });
 
   legend
