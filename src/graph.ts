@@ -96,7 +96,7 @@ function nodeIcon(nodeType:string) {
 }
 
 // Drawing Graph using d3JS
-function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag = true, print_info?: (node: any, pre_nodes: Map<string, PrintNode>) => void) {
+function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag = true, print_info?: (node: any, pre_nodes: PrintNode) => void) {
   const width = 960,
     height = 375;
   const nodes = processNodes(pre_nodes);
@@ -172,8 +172,19 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
       return str;
     });
 
-  if(print_info){
-    print_info(node, pre_nodes);
+  if (print_info) {
+      node.on("click", function (d:any) {
+        const node = document.getElementById("nodeData");
+        if(!node){
+            throw new Error("Object nodeData was not created in DOM")
+        }
+
+        const nodeData = pre_nodes.get(d["currentTarget"]["__data__"]["name"]);
+        if(!nodeData){
+          throw new Error("Current target not found in nodes map")
+        }
+      print_info(node, nodeData);
+    });
   }
 
   // specifying on tick function for the graph
