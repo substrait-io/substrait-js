@@ -96,6 +96,7 @@ function nodeIcon(nodeType:string) {
 }
 
 // Drawing Graph using d3JS
+// Function expects there is only one svg tag in the DOM where the generated plot is rendered
 function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag = true, print_info?: (node: any, pre_nodes: PrintNode) => void) {
   const width = 960,
     height = 375;
