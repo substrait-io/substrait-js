@@ -9,7 +9,7 @@
     "build": "npm run clean && npm run make-dist && npm run transpile",
     "make-dist": "mkdirp dist",
     "clean-proto": "rimraf src/generated && mkdirp src/generated",
-    "proto": "pbjs --target static-module --path substrait-spec/proto -o src/generated/definitions.js substrait/plan.proto",
+    "proto": "pbjs --target static-module -w es6 --path substrait-spec/proto -o src/generated/definitions.js substrait/plan.proto",
     "transpile": "tsc",
     "transpileProto": "pbts -o src/generated/definitions.d.ts src/generated/definitions.js",
     "prepare": "npm run clean-proto && npm run proto && npm run transpileProto",
