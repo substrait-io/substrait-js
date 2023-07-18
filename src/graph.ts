@@ -1,7 +1,7 @@
 "use strict";
 
 import * as d3 from "d3";
-import icons from "./assets/icons.json";
+import icons from "./assets/icons.json" assert { type: "json" };
 import { PrintNode } from "./parser"
 
 interface Node extends d3.SimulationNodeDatum {
