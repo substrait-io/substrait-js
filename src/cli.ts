@@ -6,6 +6,7 @@ import { Command } from 'commander';
 import { substrait } from "./generated/definitions";
 import { SubstraitParser } from "./parser";
 import { buildGraph, drawGraph } from "./graph";
+import fs from "fs";
 
 const program = new Command();
 
@@ -31,11 +32,10 @@ if (options.path) {
 
 function generateJSON(path:string, format:string){
     console.log("JSON file detected, parsing...");
-    const fs = require('fs');
     let json:{[k: string]: any};
     let plan:substrait.Plan;
     try {
-      const data = fs.readFileSync(path);
+      const data = fs.readFileSync(path, 'utf-8');
       json = JSON.parse(data);
     } catch (error) {
       throw console.error("Error while parsing JSON file: ", error);
@@ -46,7 +46,6 @@ function generateJSON(path:string, format:string){
 
 function generateBinary(path:string, format:string){
     console.log("Binary file detected, parsing...");
-    const fs = require('fs');
     let data:Buffer;
     let plan:substrait.Plan;
     try {
@@ -59,15 +58,6 @@ function generateBinary(path:string, format:string){
 }
 
 function plot(plan:substrait.Plan) {
-
-    const jsdom = require("jsdom");
-    const d3 = require("d3");
-
-    const { JSDOM } = jsdom;
-    const document = new JSDOM().window.document;
-    
-    d3.select(document.body).append("div").append("svg");
-
     try {
       const subplan = new SubstraitParser(plan).planToNode(plan);
       const graph = buildGraph(subplan);

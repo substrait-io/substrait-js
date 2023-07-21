@@ -184,10 +184,10 @@ export class SubstraitParser {
    * @return {Field} a stringified representation
    */
   private structFieldHelper(field:substrait.Expression.ReferenceSegment.IStructField, currentName:string, currentField:Field):Field {
-    if(!field.field){
-      throw new Error("fieldNum cannot be defined to convert "+currentName)
+    let fieldNum = 0;
+    if(field.field){
+      fieldNum = field.field;
     }
-    const fieldNum = field.field;
     const fieldName = currentField.name ? currentField.name : `$${fieldNum}`;
     if(!fieldName){
       throw new Error("FieldName cannot be defined to convert "+currentName)
@@ -311,10 +311,10 @@ export class SubstraitParser {
       throw new Error("Function to convert has undefined output type")
     }
     const outputType = this.typeToField(func.outputType);
-    if(!func.functionReference){
-      throw new Error("Function to convert has undefined reference")
-    }
-    const functionName = this.functionRefToName(func.functionReference);
+    let functionName = "unknown";
+    if(func.functionReference){
+      functionName = this.functionRefToName(func.functionReference);
+    } 
     const fieldName = `${functionName}(${argsString})`;
     outputType.name = fieldName;
     return outputType;

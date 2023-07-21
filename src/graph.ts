@@ -3,6 +3,8 @@
 import * as d3 from "d3";
 import icons from "./assets/icons.json" assert { type: "json" };
 import { PrintNode } from "./parser"
+import jsdom from "jsdom";
+import fs from "fs";
 
 interface Node extends d3.SimulationNodeDatum {
   name: string;
@@ -114,10 +116,10 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
       d3.forceCollide(() => 55)
     );
 
-  const svg = d3
-    .select("svg")
-    .attr("preserveAspectRatio", "xMinYMin meet")
+  svg.attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 960 375");
+
+    console.log("ok 4")
 
   // For arrowheads in edges
   svg
@@ -135,6 +137,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
     .attr("d", "M 0,-5 L 10 ,0 L 0,5")
     .attr("fill", "black")
     .style("stroke", "none");
+    console.log("ok 5")
 
   // specifying links in the graph
   const link = svg
@@ -144,6 +147,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
     .join("path")
     .attr("marker-end", "url(#arrowhead)")
     .style("stroke", "black");
+    console.log("ok 6")
 
   // specifying nodes in graph
   const node = svg.append("g").selectAll("g").data(nodes).join("g");
@@ -187,25 +191,25 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
       print_info(node, nodeData);
     });
   }
+  console.log("ok 7")
 
   // specifying on tick function for the graph
-  force.on("tick", () => {
-    link.attr("d", (d: any) => {
-      const source: any = nodes[d.source];
-      const target: any = nodes[d.target];
-      return (
-        "M" +
-        source.x +
-        "," +
-        source.y +
-        "A0,0 0 0,1" +
-        target.x +
-        "," +
-        target.y
-      );
+    force.on("tick", () => {
+      link.attr("d", (d: any) => {
+        return (
+          "M" +
+          d.source.x +
+          "," +
+          d.source.y +
+          "A0,0 0 0,1" +
+          d.target.x +
+          "," +
+          d.target.y
+        );
+      });
+      node.attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
     });
-    node.attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
-  });
+  console.log("ok 8")
 
   // network drag simulation
   function drag(network: d3.Simulation<any, undefined>) {
@@ -236,6 +240,7 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
   if (use_drag) {
     node.call(drag(force as d3.Simulation<any, undefined>));
   }
+  console.log("ok 9")
 
   // for legend mentioning node icons
   const nodeSet = new Set();
@@ -274,6 +279,12 @@ function drawGraph(pre_nodes:Map<string, PrintNode>, pre_links:Link[], use_drag 
         d;
       return str;
     });
+  
+    // Serialize the SVG to a string
+    const svgString = window.d3.select("body").html();
+  
+    // Save the SVG to a file
+    fs.writeFileSync("output.svg", svgString, "utf-8");
 }
 
 function clearGraph() {
