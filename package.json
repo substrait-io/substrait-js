@@ -19,7 +19,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@svgdotjs/svg.js": "^3.2.0",
+    "@viz-js/viz": "^3.2.3",
     "commander": "^11.0.0",
     "d3": "^7.8.5",
     "figlet": "^1.6.0",
@@ -28,8 +28,6 @@
     "protobufjs": "^6.11.3"
   },
   "devDependencies": {
-    "@types/commander": "^2.12.2",
-    "@types/d3": "^7.4.0",
     "@types/figlet": "^1.5.6",
     "@types/jsdom": "^21.1.1",
     "@typescript-eslint/eslint-plugin": "^5.58.0",

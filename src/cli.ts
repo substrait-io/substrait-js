@@ -6,6 +6,8 @@ import { Command } from 'commander';
 import { substrait } from "./generated/definitions";
 import { SubstraitParser } from "./parser";
 import { buildGraph, drawGraph } from "./graph";
+import { writeFile } from 'fs/promises';
+
 import fs from "fs";
 
 const program = new Command();
@@ -57,12 +59,18 @@ function generateBinary(path:string, format:string){
     plot(plan);
 }
 
-function plot(plan:substrait.Plan) {
+async function plot(plan:substrait.Plan) {
     try {
       const subplan = new SubstraitParser(plan).planToNode(plan);
       const graph = buildGraph(subplan);
-      drawGraph(graph["nodes"], graph["edges"]);
-      console.log("Plan generation successful!");
+      const svgString = await drawGraph(graph["edges"]);
+      
+      try {
+        await writeFile(options.output + "/plan.svg", svgString);
+        console.log('SVG file saved successfully!');
+      } catch (err) {
+        console.error('Error saving SVG file:', err);
+      }
     } catch (error) {
       throw console.error("Error generating plot: " + error);
     }
