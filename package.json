@@ -13,7 +13,7 @@
     "transpile": "tsc",
     "transpileProto": "pbts -o src/generated/definitions.d.ts dist/generated/definitions.js",
     "prepare": "npm run clean-proto && npm run proto && npm run transpileProto",
-    "lint": "eslint '**/*.ts'",
+    "lint": "eslint '**/*.ts' --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -34,6 +34,9 @@
     "@typescript-eslint/parser": "^5.58.0",
     "download-git-repo": "^0.0.2",
     "eslint": "^8.38.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-prettier": "^5.0.1",
     "git-clone": "^0.2.0",
     "mkdirp": "^1.0.4",
     "rimraf": "^3.0.2"
