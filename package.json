@@ -4,6 +4,9 @@
   "description": "Utilities for working with Substrait plans in Javascript projects",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "substrait": "dist/index.js"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && npm run clean-proto && npm run proto && npm run transpileProto && npm run make-dist && npm run transpile",

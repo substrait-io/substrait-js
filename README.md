@@ -1,6 +1,6 @@
 
 # susbtrait-js
-Typescript typings for Substrait specifications. Also provides a parser for translating substrait plans.
+Typescript typings for Substrait specifications. Also provides a parser for translating substrait plans and a CLI tool to visualize substrait plans.
 
 Substrait is cross-language specification for data compute operations, composed primarily of:
 1. a formal specification
@@ -28,6 +28,20 @@ Installation includes the following steps:
 ```
 npm ci
 npm run build
+```
+
+## Visualization
+substrait-JS provides a CLI tool for exporting graph visualization of substrait JSON and binary plans. The tool currently uses the `--experimental-specifier-resolution` flag for module resolution. The  visualization functions are the required helper methods for the [substrait-fiddle](https://github.com/voltrondata/substrait-fiddle) tool.
+
+The tool uses [viz-js](https://github.com/mdaines/viz-js) for rendering plots on JSDOM using [Graphviz](https://graphviz.org/)'s DOT language.
+
+Plot generation includes the following steps:
+```
+// The tool currently requires NodeJS version 18.0.0 for operation
+source ~/.nvm/nvm.sh
+nvm use 18.0.0
+
+substrait  -p ../plan.json -o <output path>
 ```
     
 ## License
