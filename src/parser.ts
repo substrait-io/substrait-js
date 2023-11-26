@@ -385,6 +385,20 @@ export class SubstraitParser {
         nullability,
         children: [],
       };
+    } else if (lit.fp32) {
+      return {
+        name: lit.fp32.toString(),
+        type: "fp32",
+        nullability,
+        children: [],
+      };
+    } else if (lit.fp64) {
+      return {
+        name: lit.fp64.toString(),
+        type: "fp64",
+        nullability,
+        children: [],
+      };
     } else if (lit.intervalDayToSecond) {
       const val = lit.intervalDayToSecond;
       return {
@@ -528,6 +542,16 @@ export class SubstraitParser {
       typeStr = "i64";
       nullability =
         type.i64.nullability ??
+        substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
+    } else if (type.fp32) {
+      typeStr = "fp32";
+      nullability =
+        type.fp32.nullability ??
+        substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
+    } else if (type.fp64) {
+      typeStr = "fp64";
+      nullability =
+        type.fp64.nullability ??
         substrait.Type.Nullability.NULLABILITY_UNSPECIFIED;
     } else if (type.bool) {
       typeStr = "boolean";
