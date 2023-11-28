@@ -16,7 +16,8 @@
     "transpile": "tsc",
     "transpileProto": "pbts -o src/generated/definitions.d.ts dist/generated/definitions.js",
     "prepare": "npm run clean-proto && npm run proto && npm run transpileProto",
-    "lint": "eslint '**/*.ts' --fix",
+    "lint": "eslint '**/*.ts'",
+    "lint:fix": "npm run lint -- --fix",
     "test": "$HOME/.nvm/nvm-exec jest"
   },
   "author": "",
