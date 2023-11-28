@@ -4,7 +4,7 @@ const fs = require('fs');
 test('CLI generates correct SVG file', () => {
 
   try {
-    const output = execSync(`node --experimental-specifier-resolution=node dist/index.js -p ../plan.json -o .`);
+    const output = execSync(`node --experimental-specifier-resolution=node dist/index.js -p test/plan.json -o .`);
 
     expect(output.toString()).toContain('SVG file saved successfully');
 
