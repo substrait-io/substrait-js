@@ -1,0 +1,59 @@
+<svg width="214pt" height="260pt" viewBox="0.00 0.00 214.01 260.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 256)">
+<polygon fill="white" stroke="none" points="-4,4 -4,-256 210.01,-256 210.01,4 -4,4"/>
+<!-- sort_0 -->
+<g id="node1" class="node">
+<title>sort_0</title>
+<ellipse fill="none" stroke="black" cx="36.79" cy="-90" rx="35.18" ry="18"/>
+<text text-anchor="middle" x="36.79" y="-85.8" font-family="Times,serif" font-size="14.00">sort_0</text>
+</g>
+<!-- sink_0 -->
+<g id="node2" class="node">
+<title>sink_0</title>
+<ellipse fill="none" stroke="black" cx="36.79" cy="-18" rx="36.79" ry="18"/>
+<text text-anchor="middle" x="36.79" y="-13.8" font-family="Times,serif" font-size="14.00">sink_0</text>
+</g>
+<!-- sort_0&#45;&gt;sink_0 -->
+<g id="edge1" class="edge">
+<title>sort_0-&gt;sink_0</title>
+<path fill="none" stroke="black" d="M36.79,-71.7C36.79,-64.41 36.79,-55.73 36.79,-47.54"/>
+<polygon fill="black" stroke="black" points="40.29,-47.62 36.79,-37.62 33.29,-47.62 40.29,-47.62"/>
+</g>
+<!-- project_0 -->
+<g id="node3" class="node">
+<title>project_0</title>
+<ellipse fill="none" stroke="black" cx="91.79" cy="-162" rx="47.5" ry="18"/>
+<text text-anchor="middle" x="91.79" y="-157.8" font-family="Times,serif" font-size="14.00">project_0</text>
+</g>
+<!-- project_0&#45;&gt;sort_0 -->
+<g id="edge2" class="edge">
+<title>project_0-&gt;sort_0</title>
+<path fill="none" stroke="black" d="M78.76,-144.41C72.09,-135.92 63.83,-125.41 56.41,-115.96"/>
+<polygon fill="black" stroke="black" points="59.22,-113.88 50.29,-108.18 53.71,-118.2 59.22,-113.88"/>
+</g>
+<!-- aggregate_0 -->
+<g id="node5" class="node">
+<title>aggregate_0</title>
+<ellipse fill="none" stroke="black" cx="147.79" cy="-90" rx="58.22" ry="18"/>
+<text text-anchor="middle" x="147.79" y="-85.8" font-family="Times,serif" font-size="14.00">aggregate_0</text>
+</g>
+<!-- project_0&#45;&gt;aggregate_0 -->
+<g id="edge4" class="edge">
+<title>project_0-&gt;aggregate_0</title>
+<path fill="none" stroke="black" d="M105.06,-144.41C111.66,-136.16 119.78,-126.01 127.17,-116.78"/>
+<polygon fill="black" stroke="black" points="129.77,-119.13 133.28,-109.14 124.3,-114.76 129.77,-119.13"/>
+</g>
+<!-- read_0 -->
+<g id="node4" class="node">
+<title>read_0</title>
+<ellipse fill="none" stroke="black" cx="91.79" cy="-234" rx="37.31" ry="18"/>
+<text text-anchor="middle" x="91.79" y="-229.8" font-family="Times,serif" font-size="14.00">read_0</text>
+</g>
+<!-- read_0&#45;&gt;project_0 -->
+<g id="edge3" class="edge">
+<title>read_0-&gt;project_0</title>
+<path fill="none" stroke="black" d="M91.79,-215.7C91.79,-208.41 91.79,-199.73 91.79,-191.54"/>
+<polygon fill="black" stroke="black" points="95.29,-191.62 91.79,-181.62 88.29,-191.62 95.29,-191.62"/>
+</g>
+</g>
+</svg>
