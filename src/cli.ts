@@ -27,6 +27,10 @@ if (options.path) {
   } else {
     generateBinary(options.path);
   }
+} else {
+  throw console.error(
+    "Error: Path to the plan file is required to generate plot",
+  );
 }
 
 function generateJSON(path: string) {
