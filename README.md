@@ -43,6 +43,16 @@ nvm use 18.0.0
 
 substrait  -p ../plan.json -o <output path>
 ```
+
+## Testing
+Jest is used for testing the visualization functionality of the library. To run the test, we need
+to use `nvm v18.0.0`
+```
+source ~/.nvm/nvm.sh
+nvm use 18.0.0
+
+npm run test
+```
     
 ## License
 [Apache-2.0 license](https://www.apache.org/licenses/LICENSE-2.0)
