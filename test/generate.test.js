@@ -12,6 +12,8 @@ test('CLI generates correct SVG file', () => {
     const expectedSvgContent = fs.readFileSync('test/expected.svg', 'utf-8');
     expect(outputSvgContent).toEqual(expectedSvgContent);
   
+} catch (error) {
+  fail(`Test failed: ${error.message}`);
 } finally {
     fs.unlinkSync('plan.svg');
   }
